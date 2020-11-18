@@ -1,0 +1,86 @@
+@page "/Home"
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime;
+
+<div class="container">
+
+    <h1 class="page-title">Your Gifts</h1>
+    
+    <table style="text-align:center;width:100%;font-size:24px;" class="table-striped">
+        <thead>
+            <tr>
+                <th>🎁 Gift Name 🎁</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(gifts != null) {
+                @foreach (var g in gifts)
+                {
+                    <tr>
+                        @if(g.gift.StartsWith("http")) {
+                            <a href="@g.gift">@g.gift.Substring(0,50) ...</a>
+                        } else {
+                            <span>@g.gift</span>
+                        }  
+                    </tr>
+                }
+            }
+            else {
+                <tr><td><p>You have no gifts yet, add one...</p></td></tr>
+            }
+            <tr>
+                <td>
+                    <input type="text" name="txt_giftname" id="txt_giftname" @bind="giftname" @bind:event="onchange" class="form-control form-control-lg" placeholder="gift idea" />
+                </td>
+            </tr>
+            <tr>
+                <td><button class="btn btn-santa btn-lg"  @onclick="SaveGift" id="btn_newgift">New Gift</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <br><br><br><br><br><br><br><br>
+
+    
+</div>
+
+@code {
+    private RealmUser user = new RealmUser{};
+    
+    private string giftname = "";
+
+    private class GiftItem {
+        public string created {get; set;}
+        public string orderId {get; set;}
+        public string gift {get;set;}
+    }
+    private List<GiftItem> gifts;
+
+    private async Task GetGifts() {        
+        string[] args = {};
+        gifts = await JSRuntime.InvokeAsync<List<GiftItem>>("realmShim_Function", "getMyGifts", args);
+    }
+
+    private async Task SaveGift() {
+        if(giftname.Length > 1) {
+            string[] args = {giftname};
+            await JSRuntime.InvokeVoidAsync("realmShim_Function", "setNewGift", args);
+            giftname = "";
+        }
+        await GetGifts();
+    }
+   
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            user = await JSRuntime.InvokeAsync<RealmUser>("getUserDetails");
+
+            await GetGifts();
+            
+        } catch(Exception ex) {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+}

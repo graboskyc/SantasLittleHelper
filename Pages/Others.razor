@@ -1,0 +1,97 @@
+@page "/Others"
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime;
+
+<div class="container">
+
+    <h1 class="page-title">🎁 Other Gifts People's Gifts 🎁</h1>
+    
+    <table style="text-align:center;width:100%;font-size:24px;" class="table-striped">
+        <thead style="background-color: #333;color:#ffffff">
+            <tr>
+                <th>Person</th>
+                <th>Gift Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(gifts != null) {
+                @foreach (var p in gifts)
+                {
+                    <tr>
+                        <td>@p._id</td>
+                        <td>
+                            <table style="text-align:center;width:100%;font-size:24px;">
+                            <tr><th>Gift</th><th>Purchased?</th></tr>
+                            @foreach (var g in p.giftList)
+                            {
+                                <tr>
+                                    <td>
+                                        @if(g.gift.StartsWith("http")) {
+                                            <a href="@g.gift">@g.gift.Substring(0,50) ...</a>
+                                        } else {
+                                            <span>@g.gift</span>
+                                        }                                        
+                                    </td>
+                                    <td>
+                                        @if(g.purchasedBy != null) {
+                                            <span>Snagged by @g.purchasedBy</span>
+                                        } else {
+                                            <button class="btn btn-santa btn-sm"  @onclick="@(e=>RunBuy(g._id))">Buy!</button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                            </table>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+    <br><br><br><br><br><br><br><br>
+</div>
+
+@code {
+    private RealmUser user = new RealmUser{};
+
+     private class GiftPerson {
+        public string _id {get; set;}
+        public List<GiftItem> giftList {get; set;}
+    }
+
+    private class GiftItem {
+        public string created {get; set;}
+        public string _id {get; set;}
+        public string gift {get;set;}
+        public string purchasedBy {get; set;}
+    }
+    private List<GiftPerson> gifts;
+
+    private async Task GetGifts() {        
+        string[] args = {};
+        gifts = await JSRuntime.InvokeAsync<List<GiftPerson>>("realmShim_Function", "getAllGifts", args);
+    }
+
+    private async Task RunBuy(string id) {
+        string[] args = { id };
+
+        await JSRuntime.InvokeVoidAsync("realmShim_Function", "setPurchased", args);
+        GetGifts();
+    }
+
+   
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            user = await JSRuntime.InvokeAsync<RealmUser>("getUserDetails");
+
+            await GetGifts();
+            
+        } catch(Exception ex) {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+}
