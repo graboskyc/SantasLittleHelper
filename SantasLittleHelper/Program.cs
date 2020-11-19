@@ -22,4 +22,16 @@ namespace SantasLittleHelper
             await builder.Build().RunAsync();
         }
     }
+
+    public static class Extensions
+    {
+        public static string FirstCharToUpper(this string str) {
+            if (String.IsNullOrEmpty(str)) {
+                throw new ArgumentException("Input string is Empty!");
+            }
+
+            return char.ToUpper(str[0]) + str.Substring(1);
+        }
+    }
+
 }

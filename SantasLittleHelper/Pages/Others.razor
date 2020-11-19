@@ -4,7 +4,7 @@
 
 <div class="container">
 
-    <h1 class="page-title">🎁 Other Gifts People's Gifts 🎁</h1>
+    <h1 class="page-title">🎁 For Them 🎁</h1>
     
     <table style="text-align:center;width:100%;font-size:24px;" class="table-striped">
         <thead style="background-color: #333;color:#ffffff">
@@ -18,23 +18,24 @@
                 @foreach (var p in gifts)
                 {
                     <tr>
-                        <td>@p._id</td>
+                        <td>@p._id.Split("@")[0].FirstCharToUpper()</td>
                         <td>
                             <table style="text-align:center;width:100%;font-size:24px;">
-                            <tr><th>Gift</th><th>Purchased?</th></tr>
                             @foreach (var g in p.giftList)
                             {
                                 <tr>
                                     <td>
-                                        @if(g.gift.StartsWith("http")) {
-                                            <a href="@g.gift">@g.gift.Substring(0,50) ...</a>
+                                       @if(g.gift.StartsWith("http")) {
+                                            <a href="@g.gift" target="_blank">Link</a>
+                                        } else if (g.link != null) {
+                                            <a href="@g.link" target="_blank">@g.gift</a>
                                         } else {
                                             <span>@g.gift</span>
-                                        }                                        
+                                        }                                         
                                     </td>
                                     <td>
                                         @if(g.purchasedBy != null) {
-                                            <span>Snagged by @g.purchasedBy</span>
+                                            <span>Snagged!</span>
                                         } else {
                                             <button class="btn btn-santa btn-sm"  @onclick="@(e=>RunBuy(g._id))">Buy!</button>
                                         }
@@ -64,6 +65,7 @@
         public string created {get; set;}
         public string _id {get; set;}
         public string gift {get;set;}
+        public string link {get;set;}
         public string purchasedBy {get; set;}
     }
     private List<GiftPerson> gifts;

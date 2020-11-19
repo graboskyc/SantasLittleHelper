@@ -4,21 +4,18 @@
 
 <div class="container">
 
-    <h1 class="page-title">Your Gifts</h1>
+    <h1 class="page-title">🎁 For You 🎁</h1>
     
     <table style="text-align:center;width:100%;font-size:24px;" class="table-striped">
-        <thead>
-            <tr>
-                <th>🎁 Gift Name 🎁</th>
-            </tr>
-        </thead>
         <tbody>
             @if(gifts != null) {
                 @foreach (var g in gifts)
                 {
                     <tr>
                         @if(g.gift.StartsWith("http")) {
-                            <a href="@g.gift">@g.gift.Substring(0,50) ...</a>
+                            <a href="@g.gift" target="_blank">Link</a>
+                        } else if (g.link != null) {
+                            <a href="@g.link" target="_blank">@g.gift</a>
                         } else {
                             <span>@g.gift</span>
                         }  
@@ -28,9 +25,15 @@
             else {
                 <tr><td><p>You have no gifts yet, add one...</p></td></tr>
             }
+            <tr><td><hr /></td></tr>
             <tr>
                 <td>
                     <input type="text" name="txt_giftname" id="txt_giftname" @bind="giftname" @bind:event="onchange" class="form-control form-control-lg" placeholder="gift idea" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="text" name="txt_link" id="txt_link" @bind="link" @bind:event="onchange" class="form-control form-control-lg" placeholder="link" />
                 </td>
             </tr>
             <tr>
@@ -48,11 +51,13 @@
     private RealmUser user = new RealmUser{};
     
     private string giftname = "";
+    private string link = "";
 
     private class GiftItem {
         public string created {get; set;}
         public string orderId {get; set;}
         public string gift {get;set;}
+        public string link {get;set;}
     }
     private List<GiftItem> gifts;
 
@@ -63,9 +68,10 @@
 
     private async Task SaveGift() {
         if(giftname.Length > 1) {
-            string[] args = {giftname};
+            string[] args = {giftname, link};
             await JSRuntime.InvokeVoidAsync("realmShim_Function", "setNewGift", args);
             giftname = "";
+            link = "";
         }
         await GetGifts();
     }
