@@ -33,11 +33,16 @@
                                             <span>@g.gift</span>
                                         }                                         
                                     </td>
-                                    <td>
+                                    <td width="84">
                                         @if(g.purchasedBy != null) {
-                                            <span>Snagged!</span>
+                                            @if(g.purchasedBy == user.email) {
+                                                <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunUnBuy(g._id))">Un-Buy</button>
+                                            } 
+                                            else {
+                                            <span class="btn btn-sm">Snagged!</span>
+                                            }
                                         } else {
-                                            <button class="btn btn-santa btn-sm"  @onclick="@(e=>RunBuy(g._id))">Buy!</button>
+                                            <button class="btn btn-santa-base btn-sm"  @onclick="@(e=>RunBuy(g._id))">Buy!</button>
                                         }
                                     </td>
                                 </tr>
@@ -79,7 +84,14 @@
         string[] args = { id };
 
         await JSRuntime.InvokeVoidAsync("realmShim_Function", "setPurchased", args);
-        GetGifts();
+        await GetGifts();
+    }
+
+    private async Task RunUnBuy(string id) {
+        string[] args = { id };
+
+        await JSRuntime.InvokeVoidAsync("realmShim_Function", "setUnPurchased", args);
+        await GetGifts();
     }
 
    

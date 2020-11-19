@@ -52,6 +52,15 @@
     margin-bottom:10px;
 }
 
+.btn-santa-base {
+    background-color: #A20025;
+    color:#fff;
+    text-align:center;
+    padding:5px;
+    margin-top:10px;
+    margin-bottom:10px;
+}
+
 .page-title {
     text-align: center;
     padding-top:20px;
