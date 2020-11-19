@@ -1,0 +1,37 @@
+{
+    "collection": "gifts",
+    "database": "santa",
+    "id": "5fb5428c1716719042a5c193",
+    "roles": [
+        {
+            "name": "mygift",
+            "apply_when": {
+                "ownerId": "%%user.id"
+            },
+            "fields": {
+                "purchasedBy": {}
+            },
+            "insert": true,
+            "delete": true,
+            "search": true,
+            "additional_fields": {
+                "write": true
+            }
+        },
+        {
+            "name": "everyone else",
+            "apply_when": {},
+            "fields": {
+                "purchasedBy": {
+                    "write": true
+                }
+            },
+            "read": true,
+            "insert": false,
+            "delete": false,
+            "search": true,
+            "additional_fields": {}
+        }
+    ],
+    "schema": {}
+}
