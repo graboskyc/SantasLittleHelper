@@ -7,6 +7,17 @@
     }
 }
 
+:root {
+    font-size: 22px;
+    --gsky-bg-primary: #A20025;
+    --gsky-bg-secondary: #333;
+    --gsky-text-primary: #fff;
+}
+
+.main {
+    margin-bottom: 4rem;
+}
+
 .anisanta {
     animation: ctr_spin_rotation 2s infinite linear;
     display:block;
@@ -43,8 +54,8 @@
 }
 
 .btn-santa {
-    background-color: #A20025;
-    color:#fff;
+    background-color: var(--gsky-bg-primary);
+    color: var(--gsky-text-primary);
     text-align:center;
     width:100%;
     padding:5px;
@@ -53,8 +64,8 @@
 }
 
 .btn-santa-base {
-    background-color: #A20025;
-    color:#fff;
+    background-color:  var(--gsky-bg-primary);
+    color:var(--gsky-text-primary);
     text-align:center;
     padding:5px;
     margin-top:10px;
@@ -68,16 +79,41 @@
 }
 
 .container {
-    background-color:#fff;
+    background-color: var(--gsky-text-primary);
     min-height:120vh;
 }
 
-.santa_footer {
+.navbar {
     position: fixed;
-    left:0px;
     bottom: 0px;
-    width: 100%;
-    background-color: #333;
-    text-align:center;
-    height: 72px;
+    width: 100vw;
+    height:4rem;
+    background-color: var(--gsky-bg-secondary);
+}
+
+.navbar-nav {
+    list-style: none;
+    padding:0;
+    margin:0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex:auto;
+}
+
+.nav-link {
+    display: flex;
+    justify-content: center;
+    height: 4rem;
+    color: var(--gsky-text-primary);
+}
+
+.nav-item {
+    width:100%;
+}
+
+.nav-link svg {
+    min-width: 3rem;
+    margin: 0 1.5rem;
+    color: var(--gsky-text-primary);
 }

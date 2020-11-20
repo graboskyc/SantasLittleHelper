@@ -36,7 +36,7 @@
                                     <td width="84">
                                         @if(g.purchasedBy != null) {
                                             @if(g.purchasedBy == user.email) {
-                                                <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunUnBuy(g._id))">Un-Buy</button>
+                                                <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunUnBuy(g._id))">Unbuy</button>
                                             } 
                                             else {
                                             <span class="btn btn-sm">Snagged!</span>
