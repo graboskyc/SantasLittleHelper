@@ -12,10 +12,11 @@
     --gsky-bg-primary: #A20025;
     --gsky-bg-secondary: #333;
     --gsky-text-primary: #fff;
+    --gsky-globalsize: 4rem;
 }
 
 .main {
-    margin-bottom: 4rem;
+    margin-bottom: var(--gsky-text-primary)
 }
 
 .anisanta {
@@ -83,11 +84,15 @@
     min-height:120vh;
 }
 
+.content {
+    margin-bottom: var(--gsky-text-primary);
+}
+
 .navbar {
     position: fixed;
     bottom: 0px;
     width: 100vw;
-    height:4rem;
+    height:var(--gsky-text-primary);
     background-color: var(--gsky-bg-secondary);
 }
 
@@ -104,7 +109,7 @@
 .nav-link {
     display: flex;
     justify-content: center;
-    height: 4rem;
+    height: var(--gsky-text-primary);
     color: var(--gsky-text-primary);
 }
 

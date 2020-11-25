@@ -12,32 +12,43 @@
                 @foreach (var g in gifts)
                 {
                     <tr>
-                        @if(g.gift.StartsWith("http")) {
-                            <a href="@g.gift" target="_blank">Link</a>
-                        } else if (g.link != null) {
-                            <a href="@g.link" target="_blank">@g.gift</a>
-                        } else {
-                            <span>@g.gift</span>
-                        }  
+                        <td>
+                            @if(g.gift.StartsWith("http")) {
+                                <a href="@g.gift" target="_blank">Link</a>
+                            } else if (g.link != null) {
+                                <a href="@g.link" target="_blank">@g.gift</a>
+                            } else {
+                                <span>@g.gift</span>
+                            } 
+                        </td>
+                        <td>
+                            <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunDelete(g._id))">
+                                <span class="oi oi-trash"></span>
+                            </button>
+                        </td>
                     </tr>
                 }
             }
             else {
                 <tr><td><p>You have no gifts yet, add one...</p></td></tr>
             }
-            <tr><td><hr /></td></tr>
             <tr>
-                <td>
+                <td colspan="2"><hr /></td>
+            </tr>
+            <tr>
+                <td colspan="2">
                     <input type="text" name="txt_giftname" id="txt_giftname" @bind="giftname" @bind:event="onchange" class="form-control form-control-lg" placeholder="gift idea" />
                 </td>
             </tr>
             <tr>
-                <td>
+                <td colspan="2">
                     <input type="text" name="txt_link" id="txt_link" @bind="link" @bind:event="onchange" class="form-control form-control-lg" placeholder="link" />
                 </td>
             </tr>
             <tr>
-                <td><button class="btn btn-santa btn-lg"  @onclick="SaveGift" id="btn_newgift">New Gift</button></td>
+                <td colspan="2">
+                    <button class="btn btn-santa btn-lg"  @onclick="SaveGift" id="btn_newgift">New Gift</button>
+                </td>
             </tr>
         </tbody>
     </table>
@@ -54,6 +65,7 @@
     private string link = "";
 
     private class GiftItem {
+        public string _id {get; set;}
         public string created {get; set;}
         public string orderId {get; set;}
         public string gift {get;set;}
@@ -64,6 +76,13 @@
     private async Task GetGifts() {        
         string[] args = {};
         gifts = await JSRuntime.InvokeAsync<List<GiftItem>>("realmShim_Function", "getMyGifts", args);
+    }
+
+    private async Task RunDelete(string id) {
+        string[] args = { id };
+
+        await JSRuntime.InvokeVoidAsync("realmShim_Function", "setDelete", args);
+        await GetGifts();
     }
 
     private async Task SaveGift() {
