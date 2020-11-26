@@ -13,6 +13,7 @@ const offlineAssetsExclude = [ /^service-worker\.js$/ ];
 
 async function onInstall(event) {
     console.info('Service worker: Install');
+    console.log("version new 1.0.1");
 
     // Fetch and cache all matching items from the assets manifest
     const assetsRequests = self.assetsManifest.assets

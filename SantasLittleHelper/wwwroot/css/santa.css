@@ -12,7 +12,7 @@
     --gsky-bg-primary: #A20025;
     --gsky-bg-secondary: #333;
     --gsky-text-primary: #fff;
-    --gsky-globalsize: 4rem;
+    --gsky-globalsize: 3rem;
 }
 
 .main {
@@ -92,7 +92,7 @@
     position: fixed;
     bottom: 0px;
     width: 100vw;
-    height:var(--gsky-text-primary);
+    height:var(--gsky-globalsize);
     background-color: var(--gsky-bg-secondary);
 }
 
@@ -109,7 +109,7 @@
 .nav-link {
     display: flex;
     justify-content: center;
-    height: var(--gsky-text-primary);
+    height: var(--gsky-globalsize);
     color: var(--gsky-text-primary);
 }
 

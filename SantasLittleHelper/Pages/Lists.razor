@@ -1,0 +1,165 @@
+@page "/Lists"
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime;
+
+<div class="container">
+
+    <h1 class="page-title">Lists</h1>
+    
+    @if(!hideList) {
+        @if(l != null) {
+            @foreach (var li in l)
+            {
+                <div class="card text-center">
+                    <div class="card-header">
+                        @li.name
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-5">
+                                <a href="/Gifts/@li.share" class="btn btn-lg btn-santa" style="width: 100%;" >
+                                    <span class="oi oi-person"></span> <br />
+                                    My Gifts
+                                </a>
+                            </div>
+                            <div class="col-sm-2">&nbsp;</div>
+                            <div class="col-sm-5">
+                                <a href="/Others/@li.share" class="btn btn-lg btn-santa" style="width: 100%;" >
+                                    <span class="oi oi-people"></span> <br />
+                                    Their Gifts
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted">
+                        Invite people with the code <i>@li.share</i>
+                    </div>
+                </div>
+                <br><br>
+            }
+        }
+        else {
+            <p>You have no lists yet, add one...</p>
+        }
+    }
+
+    @if(hideList) {
+        @if(dispNew) {
+            <div class="card">
+                <h5 class="card-header">Create a List</h5>
+                <div class="card-body">
+                    <input type="text" name="txt_name" id="txt_name" @bind="name" @bind:event="onchange" class="form-control form-control-lg" placeholder="event name" />
+                    <button class="btn btn-santa btn-lg"  @onclick="SaveList" id="btn_newgift">New List</button>
+                </div>
+            </div>
+        }
+        @if(dispJoin) {
+            <div class="card">
+                <h5 class="card-header">Join a List</h5>
+                <div class="card-body">
+                    <input type="text" name="txt_joinlist" id="txt_joinlist" @bind="joinlist" @bind:event="onchange" class="form-control form-control-lg" placeholder="join list id" />
+                    <button class="btn btn-santa btn-lg"  @onclick="JoinList" id="btn_joinlist">Join List</button>
+                </div>
+            </div>
+        }
+    }
+
+    <div style="margin-top:4rem;">
+        <div class="row">
+            <div class="col-sm-4" style="text-align: center;">
+                <button class="btn btn-dark btn-md" style="width: 75%;"  @onclick="OpenNew" id="btn_opennewlist">New List</button>
+            </div>
+            <div class="col-sm-4" style="text-align: center;">
+                <button class="btn btn-dark btn-md" style="width: 75%;"  @onclick="OpenMain" id="btn_openmain">Home</button>
+            </div>
+            <div class="col-sm-4" style="text-align: center;">
+                <button class="btn btn-dark btn-md" style="width: 75%;" @onclick="OpenJoin" id="btn_openjoinlist">Join a List</button>
+            </div>
+        </div>
+    </div>
+
+    <br><br><br><br><br><br>
+
+    
+</div>
+
+@code {
+    private RealmUser user = new RealmUser{};
+    
+    private string name = "";
+    private string share = "";
+    private string joinlist = "";
+    bool hideList, dispNew, dispJoin = false;
+
+    private class GiftList {
+        public string _id {get; set;}
+        public string name {get;set;}
+        public string share {get;set;}
+    }
+    private List<GiftList> l;
+
+    private async Task OpenNew() {        
+        hideList = true;
+        dispJoin = false;
+        dispNew = true;
+    }
+
+    private async Task OpenJoin() {        
+        hideList = true;
+        dispJoin = true;
+        dispNew = false;
+    }
+
+    private async Task OpenMain() {        
+        hideList = false;
+        dispJoin = false;
+        dispNew = false;
+    }
+
+    private async Task GetGifts() {        
+        string[] args = {};
+        l = await JSRuntime.InvokeAsync<List<GiftList>>("realmShim_Function", "getMyLists", args);
+        OpenMain();
+    }
+
+    private async Task SaveList() {
+        if(name.Length > 1) {
+            string[] args = {name, share};
+            await JSRuntime.InvokeVoidAsync("realmShim_Function", "setNewList", args);
+            name = "";
+            share = "";
+            await NewShareLink();
+        }
+        await GetGifts();
+    }
+
+    private async Task JoinList() {
+        if(joinlist.Length > 1) {
+            string[] args = {joinlist};
+            await JSRuntime.InvokeVoidAsync("realmShim_Function", "setJoinList", args);
+            joinlist = "";
+        }
+        await GetGifts();
+    }
+   
+   private async Task NewShareLink() {
+        Random random = new Random();
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        share = new string(Enumerable.Repeat(chars, 8).Select(s => s[random.Next(s.Length)]).ToArray());
+   }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            user = await JSRuntime.InvokeAsync<RealmUser>("getUserDetails");
+
+            await NewShareLink();
+
+            await GetGifts();
+            
+        } catch(Exception ex) {
+            NavigationManager.NavigateTo("/");
+        }
+    }
+}

@@ -46,7 +46,7 @@
         isLoading = true;
         loginSuccess = await JSRuntime.InvokeAsync<bool>("login", username, password);
         if(loginSuccess) {
-            NavigationManager.NavigateTo("/Home");
+            NavigationManager.NavigateTo("/Lists");
         } else {
             failedLogin = true;
         } 

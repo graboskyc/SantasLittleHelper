@@ -1,9 +1,10 @@
-exports = async function(){
+exports = async function(eventcode){
   const currentUser = context.user
   var conn = context.services.get("mongodb-atlas").db("santa").collection("gifts");
   
   var pipeline = [{$match: {
-    ownerId:{$ne:currentUser.id}
+    ownerId:{$ne:currentUser.id},
+    event:eventcode
     }}, {$group: {
       _id: "$email",
       "giftlist": {$push:"$$ROOT"}
