@@ -1,4 +1,5 @@
 @page "/Lists"
+@page "/Home"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime;
 
@@ -10,8 +11,8 @@
         @if(l != null) {
             @foreach (var li in l)
             {
-                <div class="card text-center">
-                    <div class="card-header">
+                <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;">
+                    <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;font-size:2rem !important;">
                         @li.name
                     </div>
                     <div class="card-body">
@@ -45,8 +46,10 @@
 
     @if(hideList) {
         @if(dispNew) {
-            <div class="card">
-                <h5 class="card-header">Create a List</h5>
+            <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;">
+                <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;font-size:2rem !important;">
+                    Create a List
+                </div>
                 <div class="card-body">
                     <input type="text" name="txt_name" id="txt_name" @bind="name" @bind:event="onchange" class="form-control form-control-lg" placeholder="event name" />
                     <button class="btn btn-santa btn-lg"  @onclick="SaveList" id="btn_newgift">New List</button>
@@ -54,8 +57,10 @@
             </div>
         }
         @if(dispJoin) {
-            <div class="card">
-                <h5 class="card-header">Join a List</h5>
+            <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;">
+                <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;font-size:2rem !important;">
+                    Join a List
+                </div>
                 <div class="card-body">
                     <input type="text" name="txt_joinlist" id="txt_joinlist" @bind="joinlist" @bind:event="onchange" class="form-control form-control-lg" placeholder="join list id" />
                     <button class="btn btn-santa btn-lg"  @onclick="JoinList" id="btn_joinlist">Join List</button>
@@ -67,13 +72,13 @@
     <div style="margin-top:4rem;">
         <div class="row">
             <div class="col-sm-4" style="text-align: center;">
-                <button class="btn btn-dark btn-md" style="width: 75%;"  @onclick="OpenNew" id="btn_opennewlist">New List</button>
+                <button class="btn btn-dark btn-md" style="width: 75%;margin-bottom:10px;"  @onclick="OpenNew" id="btn_opennewlist">New List</button>
             </div>
             <div class="col-sm-4" style="text-align: center;">
-                <button class="btn btn-dark btn-md" style="width: 75%;"  @onclick="OpenMain" id="btn_openmain">Home</button>
+                <button class="btn btn-dark btn-md" style="width: 75%;margin-bottom:10px;"  @onclick="OpenMain" id="btn_openmain">Home</button>
             </div>
             <div class="col-sm-4" style="text-align: center;">
-                <button class="btn btn-dark btn-md" style="width: 75%;" @onclick="OpenJoin" id="btn_openjoinlist">Join a List</button>
+                <button class="btn btn-dark btn-md" style="width: 75%;margin-bottom:10px;" @onclick="OpenJoin" id="btn_openjoinlist">Join a List</button>
             </div>
         </div>
     </div>

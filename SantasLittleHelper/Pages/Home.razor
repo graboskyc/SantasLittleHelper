@@ -3,56 +3,56 @@
 @inject IJSRuntime JSRuntime;
 
 <div class="container">
+    <br>
+    <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;">
+        <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;font-size:2rem !important;">
+            🎁 For You 🎁
+        </div>
+        <div class="card-body">
+            <table style="text-align:center;width:100%;font-size:24px;" class="table-striped">
+                <tbody>
+                    @if(gifts != null) {
+                        @foreach (var g in gifts)
+                        {
+                            <tr>
+                                <td>
+                                    @if(g.gift.StartsWith("http")) {
+                                        <a href="@g.gift" target="_blank">Link</a>
+                                    } else if (g.link != null) {
+                                        <a href="@g.link" target="_blank">@g.gift</a>
+                                    } else {
+                                        <span>@g.gift</span>
+                                    } 
+                                </td>
+                                <td>
+                                    <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunDelete(g._id))">
+                                        <span class="oi oi-trash"></span>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else {
+                        <tr><td><p>You have no gifts yet, add one...</p></td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-    <h1 class="page-title">🎁 For You 🎁</h1>
-    
-    <table style="text-align:center;width:100%;font-size:24px;" class="table-striped">
-        <tbody>
-            @if(gifts != null) {
-                @foreach (var g in gifts)
-                {
-                    <tr>
-                        <td>
-                            @if(g.gift.StartsWith("http")) {
-                                <a href="@g.gift" target="_blank">Link</a>
-                            } else if (g.link != null) {
-                                <a href="@g.link" target="_blank">@g.gift</a>
-                            } else {
-                                <span>@g.gift</span>
-                            } 
-                        </td>
-                        <td>
-                            <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunDelete(g._id))">
-                                <span class="oi oi-trash"></span>
-                            </button>
-                        </td>
-                    </tr>
-                }
-            }
-            else {
-                <tr><td><p>You have no gifts yet, add one...</p></td></tr>
-            }
-            <tr>
-                <td colspan="2"><hr /></td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <input type="text" name="txt_giftname" id="txt_giftname" @bind="giftname" @bind:event="onchange" class="form-control form-control-lg" placeholder="gift idea" />
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <input type="text" name="txt_link" id="txt_link" @bind="link" @bind:event="onchange" class="form-control form-control-lg" placeholder="link" />
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <button class="btn btn-santa btn-lg"  @onclick="SaveGift" id="btn_newgift">New Gift</button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;margin-top:2rem !important;">
+        <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;font-size:2rem !important;">
+            Add a Gift
+        </div>
+        <div class="card-body">
+            <input type="text" name="txt_giftname" id="txt_giftname" @bind="giftname" @bind:event="onchange" class="form-control form-control-lg" placeholder="gift idea" />
 
+            <input type="text" name="txt_link" id="txt_link" @bind="link" @bind:event="onchange" class="form-control form-control-lg" placeholder="link" />
+
+            <button class="btn btn-santa btn-lg"  @onclick="SaveGift" id="btn_newgift">New Gift</button>
+        </div>
+    </div>
+        
     <br><br><br><br><br><br><br><br>
 
     
