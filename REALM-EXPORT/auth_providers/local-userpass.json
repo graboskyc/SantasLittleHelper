@@ -5,8 +5,10 @@
     "config": {
         "autoConfirm": true,
         "resetFunctionName": "resetFunc",
+        "resetPasswordSubject": "Santos L Halper Asking to Reset Your Password",
+        "resetPasswordUrl": "https://us-east-1.aws.webhooks.mongodb-realm.com/api/client/v2.0/app/santaslittlehelper-eeoam/service/hook/incoming_webhook/resetPassword",
         "runConfirmationFunction": false,
-        "runResetFunction": true
+        "runResetFunction": false
     },
     "disabled": false
 }
