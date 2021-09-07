@@ -1,0 +1,35 @@
+{
+    "collection": "gifts",
+    "database": "santa",
+    "roles": [
+        {
+            "name": "mygift",
+            "apply_when": {
+                "ownerId": "%%user.id"
+            },
+            "fields": {
+                "purchasedBy": {}
+            },
+            "insert": true,
+            "delete": true,
+            "search": true,
+            "additional_fields": {
+                "write": true
+            }
+        },
+        {
+            "name": "everyone else",
+            "apply_when": {},
+            "fields": {
+                "purchasedBy": {
+                    "write": true
+                }
+            },
+            "read": true,
+            "insert": false,
+            "delete": false,
+            "search": true,
+            "additional_fields": {}
+        }
+    ]
+}

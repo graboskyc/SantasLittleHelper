@@ -1,0 +1,44 @@
+[
+    {
+        "name": "resetFunc",
+        "private": false,
+        "can_evaluate": {}
+    },
+    {
+        "name": "getMyGifts",
+        "private": false
+    },
+    {
+        "name": "setNewGift",
+        "private": false
+    },
+    {
+        "name": "getAllGifts",
+        "private": false
+    },
+    {
+        "name": "setPurchased",
+        "private": false
+    },
+    {
+        "name": "setUnPurchased",
+        "private": false
+    },
+    {
+        "name": "setDelete",
+        "private": false
+    },
+    {
+        "name": "setNewList",
+        "private": false
+    },
+    {
+        "name": "getMyLists",
+        "private": false
+    },
+    {
+        "name": "setJoinList",
+        "private": false,
+        "run_as_system": true
+    }
+]
