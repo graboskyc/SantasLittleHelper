@@ -25,6 +25,13 @@
                                     } 
                                 </td>
                                 <td>
+                                    @if(g.cost != null) {
+                                        if(g.cost.Length > 0) {
+                                            <span class="badge rounded-pill bg-secondary">$@g.cost</span>
+                                        }
+                                    }
+                                </td>
+                                <td>
                                     <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunDelete(g._id))">
                                         <span class="oi oi-trash"></span>
                                     </button>
@@ -49,6 +56,8 @@
             <br />
             <input type="text" name="txt_link" id="txt_link" @bind="link" @bind:event="onchange" class="form-control form-control-lg" placeholder="link" />
             <br />
+            <input type="text" name="txt_cost" id="txt_cost" @bind="cost" @bind:event="onchange" class="form-control form-control-lg" placeholder="$" />
+            <br />
             <button class="btn btn-santa btn-lg"  @onclick="SaveGift" id="btn_newgift">New Gift</button>
             <br />
         </div>
@@ -67,6 +76,7 @@
     
     private string giftname = "";
     private string link = "";
+    private string cost = "";
 
     private class GiftItem {
         public string _id {get; set;}
@@ -74,6 +84,7 @@
         public string orderId {get; set;}
         public string gift {get;set;}
         public string link {get;set;}
+        public string cost {get;set;}
     }
     private List<GiftItem> gifts;
 
@@ -91,7 +102,7 @@
 
     private async Task SaveGift() {
         if(giftname.Length > 1) {
-            string[] args = {giftname, link, Event};
+            string[] args = {giftname, link, Event, cost.Replace("$","") };
             await JSRuntime.InvokeVoidAsync("realmShim_Function", "setNewGift", args);
             giftname = "";
             link = "";

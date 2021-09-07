@@ -33,6 +33,13 @@
                                     </span>
                                 }                                         
                             </td>
+                            <td>
+                                @if(g.cost != null) {
+                                    if(g.cost.Length > 0) {
+                                        <span class="badge rounded-pill bg-secondary">$@g.cost</span>
+                                    }
+                                }
+                            </td>
                             <td width="84">
                                 @if (g.deleted)
                                 {
@@ -75,6 +82,8 @@
         public string _id {get; set;}
         public string gift {get;set;}
         public string link {get;set;}
+        
+        public string cost {get;set;}
         public string purchasedBy {get; set;}
         public bool deleted {get;set;}
     }
