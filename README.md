@@ -15,9 +15,6 @@ Simple app built on MongoDB Realm and Blazor to allow a group of users to enter 
 _Possibly being checked off on future releases_
 
 * Removing item off your list or rename it
-* List codes or groups to allow for multi-tenancy 
-* Password reset
-* User registration (done via Realm admin portal today)
 
 ## Screenshots
 
