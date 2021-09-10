@@ -31,6 +31,15 @@
                                 </a>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-sm-3">&nbsp;</div>
+                            <div class="col-sm-6">
+                                <a  @onclick="@(() => OpenClone(li.name, li.share))" class="btn btn-lg btn-santa" style="width: 100%;" >
+                                    <span class="oi oi-plus"></span> Clone Event
+                                </a>
+                            </div>
+                            <div class="col-sm-3">&nbsp;</div>
+                        </div>
                     </div>
                     <div class="card-footer text-muted">
                         Invite people with the code <i>@li.share</i>
@@ -53,6 +62,18 @@
                 <div class="card-body">
                     <input type="text" name="txt_name" id="txt_name" @bind="name" @bind:event="onchange" class="form-control form-control-lg" placeholder="event name" />
                     <button class="btn btn-santa btn-lg"  @onclick="SaveList" id="btn_newgift">New List</button>
+                </div>
+            </div>
+        }
+        @if(dispClone) {
+            <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;">
+                <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;font-size:2rem !important;">
+                    Clone List @oldListName
+                </div>
+                <div class="card-body">
+                    <p><i>This will create a new list, auto-invite everyone tied to the old list, and copy all unpurchased gifts from everyone to it.</i></p>
+                    <input type="text" name="txt_name" id="txt_name" @bind="name" @bind:event="onchange" class="form-control form-control-lg" placeholder="event name" />
+                    <button class="btn btn-santa btn-lg"  @onclick="CloneList" id="btn_newgift">Clone List</button>
                 </div>
             </div>
         }
@@ -93,8 +114,8 @@
     
     private string name = "";
     private string share = "";
-    private string joinlist = "";
-    bool hideList, dispNew, dispJoin = false;
+    private string joinlist,oldList,oldListName = "";
+    bool hideList, dispNew, dispJoin, dispClone = false;
 
     private class GiftList {
         public string _id {get; set;}
@@ -107,18 +128,30 @@
         hideList = true;
         dispJoin = false;
         dispNew = true;
+        dispClone = false;
     }
 
     private async Task OpenJoin() {        
         hideList = true;
         dispJoin = true;
         dispNew = false;
+        dispClone = false;
     }
 
     private async Task OpenMain() {        
         hideList = false;
         dispJoin = false;
         dispNew = false;
+        dispClone = false;
+    }
+
+    private async Task OpenClone(string oldname, string oldcode) {        
+        hideList = true;
+        dispJoin = false;
+        dispNew = false;
+        dispClone = true;
+        oldListName = oldname;
+        oldList = oldcode;
     }
 
     private async Task GetGifts() {        
@@ -143,6 +176,18 @@
             string[] args = {joinlist};
             await JSRuntime.InvokeVoidAsync("realmShim_Function", "setJoinList", args);
             joinlist = "";
+        }
+        await GetGifts();
+    }
+    private async Task CloneList() {
+        if(name.Length > 1) {
+            string[] args = {name, share, oldList};
+            await JSRuntime.InvokeVoidAsync("realmShim_Function", "setCopyList", args);
+            name = "";
+            share = "";
+            oldList = "";
+            oldListName = "";
+            await NewShareLink();
         }
         await GetGifts();
     }
