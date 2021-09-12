@@ -35,7 +35,7 @@
 
     private async Task RunLogin() {
         isLoading = true;
-        string resp = await JSRuntime.InvokeAsync<string>("registerUser", username, password);
+        string resp = await JSRuntime.InvokeAsync<string>("registerUser", username.ToLower(), password);
         enrolled = true;
         isLoading = false;
     }

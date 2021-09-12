@@ -58,6 +58,8 @@
             <br />
             <input type="text" name="txt_cost" id="txt_cost" @bind="cost" @bind:event="onchange" class="form-control form-control-lg" placeholder="$" />
             <br />
+            <input type="text" name="txt_kid" id="txt_kid" @bind="kid" @bind:event="onchange" class="form-control form-control-lg" placeholder="Kid's Name if for a Kid" />
+            <br />
             <button class="btn btn-santa btn-lg"  @onclick="SaveGift" id="btn_newgift">New Gift</button>
             <br />
         </div>
@@ -74,9 +76,7 @@
 
     private RealmUser user = new RealmUser{};
     
-    private string giftname = "";
-    private string link = "";
-    private string cost = "";
+    private string giftname, link, cost, kid = "";
 
     private class GiftItem {
         public string _id {get; set;}
@@ -102,11 +102,12 @@
 
     private async Task SaveGift() {
         if(giftname.Length > 1) {
-            string[] args = {giftname, link, Event, cost.Replace("$","") };
+            string[] args = {giftname, link, Event, cost.Replace("$",""), kid };
             await JSRuntime.InvokeVoidAsync("realmShim_Function", "setNewGift", args);
             giftname = "";
             link = "";
             cost = "";
+            kid="";
         }
         await GetGifts();
     }
