@@ -76,7 +76,8 @@
 
     private RealmUser user = new RealmUser{};
     
-    private string giftname, link, cost, kid = "";
+    private string giftname, link, kid = "";
+    private string cost = "";
 
     private class GiftItem {
         public string _id {get; set;}
@@ -115,6 +116,10 @@
 
     protected override async Task OnInitializedAsync()
     {
+        giftname = "";
+        link = "";
+        cost = "";
+        kid="";
         try
         {
             user = await JSRuntime.InvokeAsync<RealmUser>("getUserDetails");
