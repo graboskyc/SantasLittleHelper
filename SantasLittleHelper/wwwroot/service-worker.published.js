@@ -6,15 +6,16 @@ self.addEventListener('install', event => event.waitUntil(onInstall(event)));
 self.addEventListener('activate', event => event.waitUntil(onActivate(event)));
 self.addEventListener('fetch', event => event.respondWith(onFetch(event)));
 
-const CACHE_VERSION = '2021.09.22.002'  // Increment each time before deployment.
+const CACHE_VERSION = '2021.09.22.009'  // Increment each time before deployment.
 const cacheNamePrefix = 'offline-cache-';
-const cacheName = `${cacheNamePrefix}${self.assetsManifest.version}`;
+//const cacheName = `${cacheNamePrefix}${self.assetsManifest.version}`;
+const cacheName = `${cacheNamePrefix}${CACHE_VERSION}`;
 const offlineAssetsInclude = [ /\.dll$/, /\.pdb$/, /\.wasm/, /\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/ ];
 const offlineAssetsExclude = [ /^service-worker\.js$/ ];
 
 async function onInstall(event) {
     console.info('Service worker: Install');
-    console.log("version new 2.0.5");
+    console.log("version new " + CACHE_VERSION);
 
     // Fetch and cache all matching items from the assets manifest
     const assetsRequests = self.assetsManifest.assets
