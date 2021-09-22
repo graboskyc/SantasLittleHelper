@@ -18,6 +18,21 @@
             }
         },
         {
+            "name": "mykidgift",
+            "apply_when": {
+                "createdBy": "%%user.id"
+            },
+            "fields": {
+                "purchasedBy": {}
+            },
+            "insert": true,
+            "delete": true,
+            "search": true,
+            "additional_fields": {
+                "write": true
+            }
+        },
+        {
             "name": "everyone else",
             "apply_when": {},
             "fields": {

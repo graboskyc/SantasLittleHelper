@@ -4,7 +4,7 @@ exports = async function(gift, link, eventcode, cost, forkid){
   
   var conn = context.services.get("mongodb-atlas").db("santa").collection("gifts");
   
-  var doc = {ownerId:currentUser.id, email:currentUser.data.email, gift:gift, created:d, event:eventcode};
+  var doc = {ownerId:currentUser.id, email:currentUser.data.email, gift:gift, created:d, event:eventcode, createdBy:currentUser.id};
   
   if(forkid.length > 0) {
     doc["ownerId"] = forkid;

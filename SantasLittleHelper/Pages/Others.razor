@@ -42,6 +42,12 @@
                                     }
                                 </td>
                                 <td width="84">
+                                    @if(g.createdBy == user.id) {
+                                        <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunDelete(g._id))">
+                                            <span class="oi oi-trash"></span>
+                                        </button>
+                                    }
+
                                     @if (g.deleted)
                                     {
                                         <span class="oi oi-trash"></span>
@@ -131,8 +137,16 @@
         public string cost {get;set;}
         public string purchasedBy {get; set;}
         public bool deleted {get;set;}
+        public string createdBy {get;set;}
     }
     private List<GiftPerson> gifts;
+
+    private async Task RunDelete(string id) {
+        string[] args = { id };
+
+        await JSRuntime.InvokeVoidAsync("realmShim_Function", "setDelete", args);
+        await GetGifts();
+    }
 
     private async Task GetGifts() {        
         string[] args = {Event};
