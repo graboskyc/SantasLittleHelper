@@ -17,45 +17,90 @@
                     <table style="text-align:center;width:100%;font-size:24px;" class="table table-striped table-sm"><tbody>
                     @foreach (var g in p.giftList)
                     {
-                        <tr>
-                            <td>
-                                @if(g.gift.StartsWith("http")) {
-                                    <a href="@g.gift" target="_blank">
-                                        Link
-                                    </a>
-                                } else if (g.link != null) {
-                                    <a href="@g.link" target="_blank">
-                                        @g.gift
-                                    </a>
-                                } else {
-                                    <span>
-                                        @g.gift
-                                    </span>
-                                }                                         
-                            </td>
-                            <td>
-                                @if(g.cost != null) {
-                                    if(g.cost.Length > 0) {
-                                        <span class="badge rounded-pill bg-secondary">$@g.cost</span>
+                        if(!g.deleted) {
+                            <tr>
+                                <td>
+                                    @if(g.gift.StartsWith("http")) {
+                                        <a href="@g.gift" target="_blank">
+                                            Link
+                                        </a>
+                                    } else if (g.link != null) {
+                                        <a href="@g.link" target="_blank">
+                                            @g.gift
+                                        </a>
+                                    } else {
+                                        <span>
+                                            @g.gift
+                                        </span>
+                                    }                                         
+                                </td>
+                                <td>
+                                    @if(g.cost != null) {
+                                        if(g.cost.Length > 0) {
+                                            <span class="badge rounded-pill bg-secondary">$@g.cost</span>
+                                        }
                                     }
-                                }
-                            </td>
-                            <td width="84">
-                                @if (g.deleted)
-                                {
-                                    <span class="oi oi-trash"></span>
-                                } else if(g.purchasedBy != null) {
-                                    @if(g.purchasedBy == user.email) {
-                                        <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunUnBuy(g._id))">Unbuy</button>
-                                    } 
-                                    else {
-                                    <span class="btn btn-sm">Snagged!</span>
+                                </td>
+                                <td width="84">
+                                    @if (g.deleted)
+                                    {
+                                        <span class="oi oi-trash"></span>
+                                    } else if(g.purchasedBy != null) {
+                                        @if(g.purchasedBy == user.email) {
+                                            <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunUnBuy(g._id))">Unbuy</button>
+                                        } 
+                                        else {
+                                        <span class="btn btn-sm">Snagged!</span>
+                                        }
+                                    } else {
+                                        <button class="btn btn-santa-base btn-sm"  @onclick="@(e=>RunBuy(g._id))">Buy!</button>
                                     }
-                                } else {
-                                    <button class="btn btn-santa-base btn-sm"  @onclick="@(e=>RunBuy(g._id))">Buy!</button>
-                                }
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                        } else {
+                            // was deleted but check to see if it was purchsed before delete
+                            if(g.purchasedBy != null) {
+                                <tr>
+                                <td>
+                                    @if(g.gift.StartsWith("http")) {
+                                        <a href="@g.gift" target="_blank">
+                                            Link
+                                        </a>
+                                    } else if (g.link != null) {
+                                        <a href="@g.link" target="_blank">
+                                            @g.gift
+                                        </a>
+                                    } else {
+                                        <span>
+                                            @g.gift
+                                        </span>
+                                    }                                         
+                                </td>
+                                <td>
+                                    @if(g.cost != null) {
+                                        if(g.cost.Length > 0) {
+                                            <span class="badge rounded-pill bg-secondary">$@g.cost</span>
+                                        }
+                                    }
+                                </td>
+                                <td width="84">
+                                    @if (g.deleted)
+                                    {
+                                        <span class="oi oi-trash"></span>
+                                    } else if(g.purchasedBy != null) {
+                                        @if(g.purchasedBy == user.email) {
+                                            <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunUnBuy(g._id))">Unbuy</button>
+                                        } 
+                                        else {
+                                        <span class="btn btn-sm">Snagged!</span>
+                                        }
+                                    } else {
+                                        <button class="btn btn-santa-base btn-sm"  @onclick="@(e=>RunBuy(g._id))">Buy!</button>
+                                    }
+                                </td>
+                            </tr>
+                            }
+                        }
                     }
                     </tbody></table>
                 </div>
