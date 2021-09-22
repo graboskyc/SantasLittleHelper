@@ -76,7 +76,9 @@
 
     private RealmUser user = new RealmUser{};
     
-    private string giftname, link, kid = "";
+    private string giftname = "";
+    string link = "";
+    string kid = "";
     private string cost = "";
 
     private class GiftItem {
@@ -103,7 +105,7 @@
 
     private async Task SaveGift() {
         if(giftname.Length > 1) {
-            string[] args = {giftname, link, Event, cost.Replace("$",""), kid };
+            string[] args = {giftname, link, Event, cost.Replace("$",""), kid.FirstCharToUpper() };
             await JSRuntime.InvokeVoidAsync("realmShim_Function", "setNewGift", args);
             giftname = "";
             link = "";
