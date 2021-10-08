@@ -10,7 +10,7 @@ exports = async function(eventcode){
         purchasedBy: {
           $switch: {
             branches: [
-              {case:{$eq:["chris@grabosky.net","$purchasedBy"]}, then:"$purchasedBy"},
+              {case:{$eq:[currentUser.data.email,"$purchasedBy"]}, then:"$purchasedBy"},
               {case:{$gt:["$purchasedBy",null]}, then:"Someone"}
             ],
             default:"$purchasedBy"
