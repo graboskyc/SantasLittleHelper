@@ -54,71 +54,15 @@
     height:100vh;
 }
 
-.btn-santa {
+.santa-grid {
+    margin-top:20px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr;
+    grid-column-gap: .5rem;
+    grid-row-gap: 0px;
+}
+
+html {
     background-color: var(--gsky-bg-primary);
-    color: var(--gsky-text-primary);
-    text-align:center;
-    width:100%;
-    padding:5px;
-    margin-top:10px;
-    margin-bottom:10px;
-}
-
-.btn-santa-base {
-    background-color:  var(--gsky-bg-primary);
-    color:var(--gsky-text-primary);
-    text-align:center;
-    padding:5px;
-    margin-top:10px;
-    margin-bottom:10px;
-}
-
-.page-title {
-    text-align: center;
-    padding-top:20px;
-    padding-bottom:20px;
-}
-
-.container {
-    background-color: var(--gsky-text-primary);
-    min-height:120vh;
-}
-
-.content {
-    margin-bottom: var(--gsky-text-primary);
-}
-
-.navbar {
-    position: fixed;
-    bottom: 0px;
-    width: 100vw;
-    height:var(--gsky-globalsize);
-    background-color: var(--gsky-bg-secondary);
-}
-
-.navbar-nav {
-    list-style: none;
-    padding:0;
-    margin:0;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    flex:auto;
-}
-
-.nav-link {
-    display: flex;
-    justify-content: center;
-    height: var(--gsky-globalsize);
-    color: var(--gsky-text-primary);
-}
-
-.nav-item {
-    width:100%;
-}
-
-.nav-link svg {
-    min-width: 3rem;
-    margin: 0 1.5rem;
-    color: var(--gsky-text-primary);
 }

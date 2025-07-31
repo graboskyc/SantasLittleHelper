@@ -1,53 +1,83 @@
-using System;
-using System.Net.Http;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Text;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
-namespace SantasLittleHelper
+using MongoDB.Driver;
+using SantasLittleHelper.Datamodels;
+using SantasLittleHelper.Components;
+using Microsoft.AspNetCore.DataProtection;
+using MongoDB.Bson;
+using AspNetCore.Identity.Mongo;
+using AspNetCore.Identity.Mongo.Model;
+using Microsoft.AspNetCore.Components.Authorization;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddRazorPages();
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+builder.Services.AddHttpContextAccessor(); 
+builder.Services.AddHttpClient("Default", client =>
 {
-    public class Program
-    {
-        public static async Task Main(string[] args)
-        {
-            var builder = WebAssemblyHostBuilder.CreateDefault(args);
-            builder.RootComponents.Add<App>("app");
+    client.BaseAddress = new Uri(Environment.GetEnvironmentVariable("DEPLOYMENTBASEURI"));
+});
 
-            builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
-            await builder.Build().RunAsync();
-        }
-    }
+builder.Services.AddScoped<AuthenticationStateProvider, SantasLittleHelper.CustomAuthStateProvider>();
+builder.Services.AddScoped<SantasLittleHelper.CustomAuthStateProvider>();
 
-    public static class Extensions
-    {
-        
-        private static Random rng = new Random();  
+builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo("/var/keys"));
+builder.Services.AddControllers();
+builder.Services.AddSession();
 
-        public static string FirstCharToUpper(this string str) {
-            if (String.IsNullOrEmpty(str)) {
-                return "";
-            } else {
-                return char.ToUpper(str[0]) + str.Substring(1);
-            }
-        }
+string MDBCONNSTR = Environment.GetEnvironmentVariable("MDBCONNSTR").Trim();
 
-        public static void Shuffle<T>(this IList<T> list)  
-        {  
-            int n = list.Count;  
-            while (n > 1) {  
-                n--;  
-                int k = rng.Next(n + 1);  
-                T value = list[k];  
-                list[k] = list[n];  
-                list[n] = value;  
-            }  
-        }
-        
-    }
+static void ConfigureMDBServices(IServiceCollection services, string connectionString)
+{
+    var settings = MongoClientSettings.FromConnectionString(connectionString);
+    settings.ServerApi = new ServerApi(ServerApiVersion.V1);
 
+    services.AddSingleton<IMongoClient>(new MongoClient(settings));
+    services.AddSingleton<IMongoDatabase>(x => x.GetRequiredService<IMongoClient>().GetDatabase("santa"));
+    //services.AddSingleton<IMongoCollection<VideoListItem>>(x => x.GetRequiredService<IMongoDatabase>().GetCollection<VideoListItem>("media"));
 }
+
+ConfigureMDBServices(builder.Services, MDBCONNSTR);
+
+builder.Services.AddIdentityMongoDbProvider<MongoUser, MongoRole>(identity =>
+    {
+        identity.User.RequireUniqueEmail = true;
+        identity.Password.RequireNonAlphanumeric = false;
+        identity.Password.RequireDigit = false;
+        identity.Password.RequireUppercase = false;
+        identity.Password.RequireLowercase = false;
+        identity.Password.RequiredLength = 6;
+        identity.SignIn.RequireConfirmedAccount = false;
+    },
+    mongo =>
+    {
+        mongo.ConnectionString = MDBCONNSTR;
+    });
+
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseHttpsRedirection();
+
+app.UseStaticFiles();
+app.UseSession();
+app.UseAntiforgery();
+
+app.MapControllers();
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+
+app.Run();

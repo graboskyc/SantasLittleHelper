@@ -6,8 +6,8 @@
 
 <div class="ctr_spin_parent" style="background-color:#fff;height:120vh !important;"><div class="ctr_ctr_child">
 
-        <h1 style="text-align:center;color:#A20025;">Please Login</h1>
-        <img src="resources/santa.png" height="100" style="text-align:center;padding:10px;" /><br />
+        <h1 style="text-align:center;color:var(--pico-primary);">Please Login</h1>
+        <img src="resources/santa.png" height="100" style="text-align:center;padding:10px; height:20vh;" /><br />
         
         @if(failedLogin) {
             <div class="alert alert-danger" role="alert">Your email address or password is incorrect.</div>
@@ -22,10 +22,11 @@
             <input type="password" name="txt_password" id="txt_password" @bind="password" @bind:event="onchange" class="form-control form-control-lg" placeholder="Password" />
 
             @if(!isLoading) {
-                <button class="btn btn-santa btn-lg" @onclick="RunLogin" id="btn_login">Login</button>
+                <button style="width:100%" @onclick="RunLogin" id="btn_login">Login</button>
             } else {
-                <button class="btn btn-santa btn-lg" disabled ><span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span> Logging In...</button>
+                <button style="width:100%" disabled aria-busy="true">Logging In...</button>
             }
+
         } else {
             <p>Check your email for reset link</p>
         }
@@ -35,11 +36,8 @@
         <p style="padding:5px;padding-top:10px;font-size:16px;">Forgot your password? <a @onclick="RunReset" href="#" style="color:#A20025;">Click here to send email reset</a>.</p>
         <p style="padding:5px;padding-top:10px;font-size:16px;"><a href="Register" style="color:#A20025;">Register for an account</a>.</p>
 
-        <br><br><br><br><br><br><br><br>
 
     </div>
-
-<br><br><br><br><br><br><br><br>
 
 </div>
 
