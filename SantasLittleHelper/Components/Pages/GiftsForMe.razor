@@ -1,103 +1,133 @@
 @page "/Gifts/{Event}"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime;
+@using MongoDB.Bson;
+@using MongoDB.Driver;
+@inject IMongoCollection<Gift> GCol;
+    
+@inject AuthenticationStateProvider asp;
+@using System.Security.Claims
+@attribute [Authorize]
 
-<div class="container">
-    <br>
-    <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;">
-        <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;font-size:2rem !important;">
-            🎁 For You 🎁
-        </div>
-        <div class="card-body">
-            <table style="text-align:center;width:100%;font-size:24px;" class="table-striped">
-                <tbody>
-                    @if(gifts != null) {
-                        @foreach (var g in gifts)
-                        {
-                            <tr>
-                                <td>
-                                    @if(g.gift.StartsWith("http")) {
-                                        <a href="@g.gift" target="_blank">Link</a>
-                                    } else if (g.link != null) {
-                                        <a href="@g.link" target="_blank">@g.gift</a>
-                                    } else {
-                                        <span>@g.gift</span>
-                                    } 
-                                </td>
-                                <td>
-                                    @if(g.cost != null) {
-                                        if(g.cost.Length > 0) {
-                                            <span class="badge rounded-pill bg-secondary">$@g.cost</span>
-                                        }
-                                    }
-                                </td>
-                                <td>
-                                    <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunDelete(g._id))">
-                                        <span class="oi oi-trash"></span>
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else {
-                        <tr><td><p>You have no gifts yet, add one...</p></td></tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    </div>
+<PageTitle>Gifts For Me</PageTitle>
 
-    <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;margin-top:2rem !important;">
-        <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;font-size:2rem !important;">
-            Add a Gift
-        </div>
-        <div class="card-body">
-            <input type="text" name="txt_giftname" id="txt_giftname" @bind="giftname" @bind:event="onchange" class="form-control form-control-lg" placeholder="gift idea" />
-            <br />
-            <input type="text" name="txt_link" id="txt_link" @bind="link" @bind:event="onchange" class="form-control form-control-lg" placeholder="link" />
-            <br />
-            <input type="text" name="txt_cost" id="txt_cost" @bind="cost" @bind:event="onchange" class="form-control form-control-lg" placeholder="$" />
-            <br />
-            <input type="text" name="txt_kid" id="txt_kid" @bind="kid" @bind:event="onchange" class="form-control form-control-lg" placeholder="Kid's Name if for a Kid" />
-            <br />
-            <button class="btn btn-santa btn-lg"  @onclick="SaveGift" id="btn_newgift">New Gift</button>
-            <br />
-        </div>
-    </div>
-        
-    <br><br><br><br><br><br><br><br>
+<article style="min-height: 75vh;">
+
+    <header>
+        <h1>🎁 For Me 🎁</h1>
+    </header>
+
+    <table style="text-align:center;width:100%;font-size:24px;" class="striped">
+        <thead data-theme="dark">
+            <tr>
+                <th>Gift</th>
+                <th>Cost</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(gifts != null) {
+                @foreach (var g in gifts)
+                {
+                    <tr>
+                        <td>
+                            @if(g.gift.StartsWith("http")) {
+                                <a href="@g.gift" target="_blank">Link</a>
+                            } else if (g.link != null) {
+                                <a href="@g.link" target="_blank">@g.gift</a>
+                            } else {
+                                <span>@g.gift</span>
+                            } 
+                        </td>
+                        <td>
+                            @if(g.cost != null) {
+                                if(g.cost.Length > 0) {
+                                    <span role="button" class="secondary outline" style="width:100%">$@g.cost</span>
+                                }
+                            }
+                        </td>
+                        <td>
+                            <button @onclick="@(e=>RunDelete(g._id))">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else {
+                <tr><td><p>You have no gifts yet, add one...</p></td></tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" style="text-align:center;">
+                    <button @onclick="() => modalOpen = true" class="secondary" style="width:100%">Add a Gift</button>
+                </td>
+            </tr>
+        </tfoot>
+    </table
+
+    @if (modalOpen)
+    {
+        <dialog open>
+            <article>
+                <header data-theme="dark" style="background-color:#A20025">
+                    <h2>
+                        Add a Gift
+                        <button @onclick="() => modalOpen = false" class="secondary">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </h2>
+                </header>
+                    <div>
+                        <input type="text" name="txt_giftname" id="txt_giftname" @bind="giftname" @bind:event="onchange" class="form-control form-control-lg" placeholder="gift idea" />
+                        <br />
+                        <input type="text" name="txt_link" id="txt_link" @bind="link" @bind:event="onchange" class="form-control form-control-lg" placeholder="link" />
+                        <br />
+                        <input type="text" name="txt_cost" id="txt_cost" @bind="cost" @bind:event="onchange" class="form-control form-control-lg" placeholder="$" />
+                        <br />
+                        <input type="text" name="txt_kid" id="txt_kid" @bind="kid" @bind:event="onchange" class="form-control form-control-lg" placeholder="Kid's Name if for a Kid" />
+                        <br />
+                    </div>
+                <footer>
+                    <button @onclick="SaveGift" style="width:100%">New Gift</button>
+                </footer>
+            </article>
+        </dialog>
+    }
 
     
-</div>
+
+    
+</article>
 
 @code {
     [Parameter]
     public string Event {get; set;}
-
-    private RealmUser user = new RealmUser{};
+    private string _userId = "";
+    private string _email = "";
     
     private string giftname = "";
     string link = "";
     string kid = "";
     private string cost = "";
+    private bool modalOpen = false;
 
-    private class GiftItem {
-        public string _id {get; set;}
-        public string created {get; set;}
-        public string orderId {get; set;}
-        public string gift {get;set;}
-        public string link {get;set;}
-        public string cost {get;set;}
+
+    private List<Gift> gifts = null;
+
+    private async Task GetGifts() {
+        modalOpen = false;
+        var result = await GCol.Aggregate()
+            .Match(g => g.eventCode == Event && g.deleted != true && g.ownerId == _userId)
+            .SortBy(g => g.created)
+            .ToListAsync();
+        gifts = result;
+        StateHasChanged();
     }
-    private List<GiftItem> gifts;
 
-    private async Task GetGifts() {        
-        string[] args = {Event};
-        gifts = await JSRuntime.InvokeAsync<List<GiftItem>>("realmShim_Function", "getMyGifts", args);
-    }
-
-    private async Task RunDelete(string id) {
-        string[] args = { id };
+    private async Task RunDelete(ObjectId id) {
+        string[] args = { id.ToString() };
 
         await JSRuntime.InvokeVoidAsync("realmShim_Function", "setDelete", args);
         await GetGifts();
@@ -111,6 +141,7 @@
             link = "";
             cost = "";
             kid="";
+            modalOpen = false;
         }
         await GetGifts();
     }
@@ -122,14 +153,11 @@
         link = "";
         cost = "";
         kid="";
-        try
-        {
-            user = await JSRuntime.InvokeAsync<RealmUser>("getUserDetails");
 
-            await GetGifts();
-            
-        } catch(Exception ex) {
-            NavigationManager.NavigateTo("/");
-        }
+        var authState = await asp.GetAuthenticationStateAsync();
+        _userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        _email = authState.User.FindFirstValue(ClaimTypes.Email);
+
+        await GetGifts();
     }
 }

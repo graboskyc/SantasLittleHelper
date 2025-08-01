@@ -32,7 +32,7 @@
         <button aria-busy="true" aria-label="Logging In..." style="width:100%;">Logging In...</button>
     }
 
-    <p>Note we changed our authentication system. If you have not done so already, please <a href="/Account/NewUser">re-register</a>.</p>
+    <p>Note we changed our authentication system. If you have not done so already, please <a @onclick="@(() => NavigationManager.NavigateTo("/Account/Register"))">re-register</a>.</p>
 </EditForm>
 
 

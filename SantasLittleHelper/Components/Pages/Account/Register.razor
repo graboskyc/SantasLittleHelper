@@ -11,6 +11,7 @@
 @using MongoDB.Bson;
 @using MongoDB.Driver;
 @inject IMongoCollection<Gift> GCol;
+@inject NavigationManager NavigationManager;
 
 <PageTitle>New User</PageTitle>
 
@@ -45,7 +46,7 @@
             <button aria-busy="true" aria-label="Creating..." style="width:100%;">Creating...</button>
         }
     } else {
-        <p><a href="/Account/Login">Please Login</a></p>
+        <p><a @onclick="@(() => NavigationManager.NavigateTo("/Account/Login"))">Please Login</a></p>
     }
     
 </EditForm>

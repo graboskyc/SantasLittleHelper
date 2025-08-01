@@ -27,12 +27,12 @@
                     </header>
 
                     <div class="grid">
-                        <a href="/Gifts/@li.share" role="button" style="width: 100%;" >
+                        <a @onclick="@(() => NavigationManager.NavigateTo("/Gifts/"+li.share))"  role="button" style="width: 100%;" >
                             <span class="material-symbols-outlined">person</span> <br />
                             My Gifts
                         </a>
 
-                        <a href="/Others/@li.share" role="button" style="width: 100%;" >
+                        <a @onclick="@(() => NavigationManager.NavigateTo("/Others/"+li.share))" role="button" style="width: 100%;" >
                             <span class="material-symbols-outlined">group</span> <br />
                             Their Gifts
                         </a>
