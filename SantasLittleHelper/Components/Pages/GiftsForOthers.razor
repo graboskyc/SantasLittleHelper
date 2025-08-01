@@ -48,7 +48,7 @@
                             <td>
                                 @if(g.cost != null) {
                                     if(g.cost.Length > 0) {
-                                        <div class="outline secondary">$@g.cost</div>
+                                        <div class="outline secondary" role="button">$@g.cost</div>
                                     }
                                 }
                             </td>
@@ -133,7 +133,7 @@
             Builders<Gift>.Filter.Eq(g => g._id, id),
             Builders<Gift>.Update.Unset(g => g.purchasedBy)
         );
-        
+
         await GetGifts();
     }
 
