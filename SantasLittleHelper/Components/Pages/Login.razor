@@ -1,0 +1,118 @@
+﻿@layout NavlessLayout
+@page "/"
+@page "/Login"
+@page "/Account/Login"
+@inject NavigationManager NavigationManager
+@inject IHttpClientFactory HttpClientFactory
+@inject AuthenticationStateProvider asp;
+
+<PageTitle>Login to Santa's Little Helper</PageTitle>
+
+<h1>Please Login</h1>
+<img src="resources/santa.png" height="100" style="text-align:center;padding:10px; height:20vh;" /><br />
+
+@if(failedLogin) {
+    @if(responseMessage != "") {
+        <mark>@responseMessage</mark>
+    } else {
+        <mark>Login failed. Please try again.</mark>
+    }
+}
+
+<EditForm OnSubmit="RunLogin" Model="_loginCreds" >
+    <label for="txt_username">Email Address</label>
+    <InputText @bind-Value="_loginCreds.Email" id="txt_username" placeholder="Email" />
+
+    <label for="txt_password">Password</label>
+    <InputText type="password" @bind-Value="_loginCreds.Password" id="txt_password" placeholder="Password" />
+
+    @if(!isLoading) {
+        <input type="submit" id="btn_login" style="width:100%;" value="Login" />
+    } else {
+        <button aria-busy="true" aria-label="Logging In..." style="width:100%;">Logging In...</button>
+    }
+</EditForm>
+
+
+@code {
+   private bool isLoading = false;
+    private bool loginSuccess = false;
+    private bool failedLogin = false;
+    private string responseMessage = "";
+    private LoginCreds _loginCreds = new LoginCreds();
+
+    private async void RunLogin()
+    {
+        Console.WriteLine("RunLogin called with username: " + _loginCreds.Email);
+        isLoading = true;        
+        responseMessage = "";
+        StateHasChanged();
+        failedLogin = false;
+        var loginRequest = new {
+            Email = _loginCreds.Email,
+            Password = _loginCreds.Password
+        };
+        try
+        {
+            var client = HttpClientFactory.CreateClient("Default");
+            var response = await client.PostAsJsonAsync("api/Login", loginRequest);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<LoginResult>();
+                loginSuccess = result?.Success ?? false;
+                if (loginSuccess && result != null)
+                {
+                    Console.WriteLine("Login successful with token: " + result.Token);
+                    var casp = asp as CustomAuthStateProvider;
+                    casp?.AuthenticateUser(result.Token);
+                    var authstate = await asp.GetAuthenticationStateAsync();
+
+                    var uri = new Uri(NavigationManager.Uri);
+                    var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                    var returnUrl = query["ReturnUrl"];
+                    if (!string.IsNullOrEmpty(returnUrl))
+                    {
+                        NavigationManager.NavigateTo(returnUrl);
+                    }
+                    else
+                    {
+                        NavigationManager.NavigateTo("/Lists");
+                    }
+                }
+                else
+                {
+                    failedLogin = true;
+                }
+            }
+            else
+            {
+                failedLogin = true;
+            }
+        }
+        catch(Exception ex)        
+        {
+            Console.WriteLine("Login failed: " + ex.Message);
+        } 
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private class LoginResult
+    {
+        public bool Success { get; set; }
+        public string? Message { get; set; }
+        public string? Token { get; set; }
+    }
+
+    private class LoginCreds
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+
+    
+    
+}

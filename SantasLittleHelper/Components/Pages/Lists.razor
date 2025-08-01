@@ -1,51 +1,53 @@
 @page "/Lists"
 @page "/Home"
-@inject NavigationManager NavigationManager
+@inject NavigationManager NavigationManager;
 @inject IJSRuntime JSRuntime;
+@using MongoDB.Bson;
+@using MongoDB.Driver;
+@inject IMongoCollection<GiftList> GLCol;
+@inject AuthenticationStateProvider asp;
+@using System.Security.Claims
+@attribute [Authorize]
 
-<div class="container">
+<PageTitle>Gift Lists</PageTitle>
 
-    <h1 class="page-title">Lists</h1>
-    
+<article style="min-height: 75vh;">
+
+    <header>
+        <h1>Gift Lists</h1>
+    </header>
+
     @if(!hideList) {
         @if(l != null) {
             @foreach (var li in l)
             {
-                <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;">
-                    <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;font-size:2rem !important;">
-                        @li.name
+                <article style="margin-bottom:2rem;">
+                    <header data-theme="dark" style="background-color:#A20025">
+                        <h2>@li.name</h2>
+                    </header>
+
+                    <div class="grid">
+                        <a href="/Gifts/@li.share" role="button" style="width: 100%;" >
+                            <span class="material-symbols-outlined">person</span> <br />
+                            My Gifts
+                        </a>
+
+                        <a href="/Others/@li.share" role="button" style="width: 100%;" >
+                            <span class="material-symbols-outlined">group</span> <br />
+                            Their Gifts
+                        </a>
+
+                        <a  @onclick="@(() => OpenClone(li.name, li.share))" role="button" style="width: 100%;" >
+                            <span class="material-symbols-outlined">content_copy</span> <br />
+                            Clone Event
+                        </a>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-sm-5">
-                                <a href="/Gifts/@li.share" class="btn btn-lg btn-santa" style="width: 100%;" >
-                                    <span class="oi oi-person"></span> <br />
-                                    My Gifts
-                                </a>
-                            </div>
-                            <div class="col-sm-2">&nbsp;</div>
-                            <div class="col-sm-5">
-                                <a href="/Others/@li.share" class="btn btn-lg btn-santa" style="width: 100%;" >
-                                    <span class="oi oi-people"></span> <br />
-                                    Their Gifts
-                                </a>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-sm-3">&nbsp;</div>
-                            <div class="col-sm-6">
-                                <a  @onclick="@(() => OpenClone(li.name, li.share))" class="btn btn-lg btn-santa" style="width: 100%;" >
-                                    <span class="oi oi-plus"></span> Clone Event
-                                </a>
-                            </div>
-                            <div class="col-sm-3">&nbsp;</div>
-                        </div>
-                    </div>
-                    <div class="card-footer text-muted">
+
+                    <footer class="footer-subtle">
                         Invite people with the code <i>@li.share</i>
-                    </div>
-                </div>
-                <br><br>
+                    </footer>
+                    
+                </article>
             }
         }
         else {
@@ -55,97 +57,96 @@
 
     @if(hideList) {
         @if(dispNew) {
-            <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;">
-                <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;font-size:2rem !important;">
-                    Create a List
-                </div>
-                <div class="card-body">
+            <article>
+                <header data-theme="dark" style="background-color:#A20025">
+                    <h2>Create a List</h2>
+                </header>
+                <div>
                     <input type="text" name="txt_name" id="txt_name" @bind="name" @bind:event="onchange" class="form-control form-control-lg" placeholder="event name" />
-                    <button class="btn btn-santa btn-lg"  @onclick="SaveList" id="btn_newgift">New List</button>
                 </div>
-            </div>
+                <footer>
+                    <button  @onclick="SaveList" style="width:100%" class="outline">New List</button>
+                </footer>
+            </article>
         }
         @if(dispClone) {
-            <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;">
-                <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;font-size:2rem !important;">
-                    Clone List @oldListName
-                </div>
-                <div class="card-body">
+            <article>
+                <header data-theme="dark" style="background-color:#A20025">
+                    <h3>Clone List @oldListName</h3>
+                </header>
+                <div>
                     <p><i>This will create a new list, auto-invite everyone tied to the old list, and copy all unpurchased gifts from everyone to it.</i></p>
                     <input type="text" name="txt_name" id="txt_name" @bind="name" @bind:event="onchange" class="form-control form-control-lg" placeholder="event name" />
-                    <button class="btn btn-santa btn-lg"  @onclick="CloneList" id="btn_newgift">Clone List</button>
                 </div>
-            </div>
+                <footer>
+                    <button style="width:100%"  @onclick="CloneList" id="btn_newgift" class="outline">Clone List</button>
+                </footer>
+            </article>
         }
         @if(dispJoin) {
-            <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;">
-                <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;font-size:2rem !important;">
-                    Join a List
-                </div>
-                <div class="card-body">
+            <article>
+                <header data-theme="dark" style="background-color:#A20025">
+                    <h3>Join a List</h3>
+                </header>
+                <div>
                     <input type="text" name="txt_joinlist" id="txt_joinlist" @bind="joinlist" @bind:event="onchange" class="form-control form-control-lg" placeholder="join list id" />
-                    <button class="btn btn-santa btn-lg"  @onclick="JoinList" id="btn_joinlist">Join List</button>
                 </div>
-            </div>
+                <footer>
+                    <button style="width:100%"  @onclick="JoinList" id="btn_joinlist" class="outline">Join List</button>
+                </footer>
+            </article>
         }
     }
 
-    <div style="margin-top:4rem;">
-        <div class="row">
-            <div class="col-sm-4" style="text-align: center;">
-                <button class="btn btn-dark btn-md" style="width: 75%;margin-bottom:10px;"  @onclick="OpenNew" id="btn_opennewlist">New List</button>
-            </div>
-            <div class="col-sm-4" style="text-align: center;">
-                <button class="btn btn-dark btn-md" style="width: 75%;margin-bottom:10px;"  @onclick="OpenMain" id="btn_openmain">Home</button>
-            </div>
-            <div class="col-sm-4" style="text-align: center;">
-                <button class="btn btn-dark btn-md" style="width: 75%;margin-bottom:10px;" @onclick="OpenJoin" id="btn_openjoinlist">Join a List</button>
-            </div>
+    <footer>
+        <div class="santa-grid santa-grid-3">
+            <button @onclick="OpenNew" id="btn_opennewlist">
+                <span class="material-symbols-outlined">add_notes</span>
+            </button>
+            <button @onclick="OpenMain" id="btn_openmain">
+                <span class="material-symbols-outlined">home</span>
+            </button>
+            <button @onclick="OpenJoin" id="btn_openjoinlist">
+                <span class="material-symbols-outlined">group_add</span>
+            </button>
         </div>
-    </div>
-
-    <br><br><br><br><br><br>
+    </footer>
 
     
-</div>
+</article>
 
 @code {
-    private RealmUser user = new RealmUser{};
     
     private string name = "";
     private string share = "";
     private string joinlist,oldList,oldListName = "";
     bool hideList, dispNew, dispJoin, dispClone = false;
+    private string _userId = "";
 
-    private class GiftList {
-        public string _id {get; set;}
-        public string name {get;set;}
-        public string share {get;set;}
-    }
-    private List<GiftList> l;
+    private List<GiftList> l = null;
 
-    private async Task OpenNew() {        
+    private void OpenNew() {        
         hideList = true;
         dispJoin = false;
         dispNew = true;
         dispClone = false;
     }
 
-    private async Task OpenJoin() {        
+    private void OpenJoin() {        
         hideList = true;
         dispJoin = true;
         dispNew = false;
         dispClone = false;
     }
 
-    private async Task OpenMain() {        
+    private void OpenMain() {        
         hideList = false;
         dispJoin = false;
         dispNew = false;
         dispClone = false;
     }
 
-    private async Task OpenClone(string oldname, string oldcode) {        
+    private void OpenClone(string oldname, string oldcode) {        
         hideList = true;
         dispJoin = false;
         dispNew = false;
@@ -155,8 +156,11 @@
     }
 
     private async Task GetGifts() {        
-        string[] args = {};
-        l = await JSRuntime.InvokeAsync<List<GiftList>>("realmShim_Function", "getMyLists", args);
+        var result = await GLCol.Aggregate()
+            .Match(g => g.ownerId.Contains(_userId))
+            .SortByDescending(g => g._id)
+            .ToListAsync();
+        l = result;
         OpenMain();
     }
 
@@ -200,16 +204,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            user = await JSRuntime.InvokeAsync<RealmUser>("getUserDetails");
-
-            await NewShareLink();
-
-            await GetGifts();
-            
-        } catch(Exception ex) {
-            NavigationManager.NavigateTo("/");
-        }
+        var authState = await asp.GetAuthenticationStateAsync();
+        _userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        Console.WriteLine("User ID: " + _userId);
+        await NewShareLink();
+        await GetGifts();
     }
 }

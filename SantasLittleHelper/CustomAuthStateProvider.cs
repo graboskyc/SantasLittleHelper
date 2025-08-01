@@ -10,6 +10,8 @@ namespace SantasLittleHelper
     public class CustomAuthStateProvider : AuthenticationStateProvider {
         private string _token = "";
         private AuthenticationState authState;
+        private string _email = "";
+        private string _id = "";
 
 
         public void AuthenticateUser(string token)
@@ -23,7 +25,16 @@ namespace SantasLittleHelper
             return _token;
         }
 
-        
+        public string GetEmail()
+        {
+            return _email;
+        }
+
+        public string GetId()
+        {
+            return _id;
+        }
+
         public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             var claims = ParseJWT(_token);
@@ -39,7 +50,7 @@ namespace SantasLittleHelper
 
         // grabosky is dumb
         // https://github.com/patrickgod/BlazorAuthenticationTutorial/blob/master/BlazorAuthenticationTutorial/Client/CustomAuthStateProvider.cs
-        public static List<Claim> ParseJWT(string jwt) {
+        public List<Claim> ParseJWT(string jwt) {
             var claims = new List<Claim>();
 
             if(jwt != null) {
@@ -51,8 +62,10 @@ namespace SantasLittleHelper
                     Console.WriteLine("Decoded JWT: " + JsonSerializer.Serialize(decoded));
 
                     claims.Add(new Claim(ClaimTypes.Name, decoded.email));
+                    _email = decoded.email;
+                    _id = decoded.id;
+                    claims.Add(new Claim(ClaimTypes.NameIdentifier, decoded.id));
 
-                    
                 }
                 else
                 {

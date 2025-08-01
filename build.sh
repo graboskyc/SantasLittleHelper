@@ -28,7 +28,7 @@ if [ $EXITCODE -eq 0 ]
 
     docker stop slh
     docker rm slh
-    docker run -t -i -d -p 9999:8080 --name slh -e "MDBCONNSTR=${MDBCONNSTR}" --restart unless-stopped graboskyc/slh:${abbrvhash}
+    docker run -t -i -d -p 9999:8080 --name slh -e "MDBCONNSTR=${MDBCONNSTR}" -e "DEPLOYMENTBASEURI=${DEPLOYMENTBASEURI}" -e "JWTKEY=${JWTKEY}" --restart unless-stopped graboskyc/slh:${abbrvhash}
 
     echo
     echo "+================================"

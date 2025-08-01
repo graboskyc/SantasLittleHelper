@@ -5,10 +5,11 @@ using MongoDB.Bson.Serialization.Attributes;
 namespace SantasLittleHelper.Datamodels
 {
     [BsonIgnoreExtraElements]
-    class Babies
+    class GiftList
     {
         public ObjectId _id { get; set; }
         public string name { get; set; }
-        public string babycolor { get; set; }
+        public string share { get; set; }
+        public List<string> ownerId { get; set; } = new List<string>();
     }
 }

@@ -1,0 +1,94 @@
+@using AspNetCore.Identity.Mongo.Model
+@using Microsoft.AspNetCore.Identity
+@using AspNetCore.Identity.Mongo
+@using AspNetCore.Identity.Mongo.Stores
+@inject UserManager<MongoUser> UserManager
+@layout NavlessLayout;
+@page "/NewUser"
+@attribute [Authorize]
+@inject AuthenticationStateProvider asp;
+
+<PageTitle>New User</PageTitle>
+
+<AuthorizeView Roles="ADMIN" Context="Auth">
+    <Authorized>
+        <h1>Create a New User</h1>
+
+        <EditForm Model="@newUser" OnValidSubmit="CreateNewUser">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <label for="txt_username">Email Address</label>
+            <InputText id="txt_username" @bind-Value="newUser.Email" placeholder="Email" />
+
+            <label for="txt_password">Password</label>
+            <InputText id="txt_password" type="password" @bind-Value="newUser.Password" placeholder="Password"  />
+
+            <label for="txt_id">Stitch ID</label>
+            <InputText id="txt_id" @bind-Value="newUser.Id" placeholder="Stitch ID" />
+
+            @if(!isLoading) {
+                <button type="submit" style="width:100%;">Create User</button>
+            } else {
+                <button aria-busy="true" aria-label="Creating..." style="width:100%;">Creating...</button>
+            }
+        </EditForm>
+    </Authorized>
+    <NotAuthorized>
+        <p>You are not authorized to view this content. Please Login <a href="/Login">here</a>.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private class NewUserModel
+    {
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+        public string Id { get; set; } = "";
+    }
+
+    private NewUserModel newUser = new NewUserModel();
+    private bool isLoading = false;
+
+    private async Task CreateNewUser()
+    {
+        isLoading = true;
+        var identityUser = new MongoUser
+        {
+            UserName = newUser.Email,
+            Email = newUser.Email,
+            Id = MongoDB.Bson.ObjectId.Parse(newUser.Id)
+        };
+        identityUser.Claims.Add(new IdentityUserClaim<string>
+        {
+            ClaimType = "Email",
+            ClaimValue = newUser.Email
+        });
+
+        identityUser.Claims.Add(new IdentityUserClaim<string>
+            {
+                ClaimType = "groups",
+                ClaimValue = "USER"
+            });
+
+        identityUser.Claims.Add(new IdentityUserClaim<string>
+            {
+                ClaimType = "groups",
+                ClaimValue = "VIEWER"
+            });
+
+        var result = await UserManager.CreateAsync(identityUser, newUser.Password);
+        isLoading = false;
+        if (result.Succeeded)
+        {
+            // Optionally show success message or redirect
+            Console.WriteLine("User created successfully.");
+            isLoading = false;
+        }
+        else
+        {
+            // Optionally show error messages
+            Console.WriteLine("Error creating user: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+        }
+    }
+}

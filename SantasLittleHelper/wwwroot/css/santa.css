@@ -57,12 +57,31 @@
 .santa-grid {
     margin-top:20px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
     grid-template-rows: 1fr;
     grid-column-gap: .5rem;
     grid-row-gap: 0px;
 }
 
+.santa-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.santa-grid-2 {
+
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.santa-grid-3 {
+
+    grid-template-columns: repeat(3, 1fr);
+}
+
 html {
     background-color: var(--gsky-bg-primary);
+}
+
+.footer-subtle {
+    color: #fff;
+    background-color: var(--pico-secondary);
+    font-size: .75rem;
 }
