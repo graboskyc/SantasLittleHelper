@@ -11,7 +11,7 @@ namespace SantasLittleHelper.Datamodels
         public string ownerId { get; set; }
         public string email { get; set; }
         public string gift { get; set; }
-        public string? cost { get; set; } = null;
+        public string? cost { get; set; } = "";
         public bool deleted { get; set; } = false;
         public DateTime created { get; set; }
         public string createdBy { get; set; } = "";

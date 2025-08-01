@@ -156,7 +156,7 @@
 
         var authState = await asp.GetAuthenticationStateAsync();
         _userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
-        _email = authState.User.FindFirstValue(ClaimTypes.Email);
+        _email = authState.User.FindFirstValue(ClaimTypes.Name);
 
         await GetGifts();
     }

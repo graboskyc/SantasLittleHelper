@@ -1,167 +1,128 @@
 @page "/Others/{Event}"
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime;
-
-<div class="container">
-
-    <h1 class="page-title">🎁 For Them 🎁</h1>
+@using SantasLittleHelper.Datamodels;
+@using MongoDB.Bson;
+@using MongoDB.Driver;
+@inject IMongoCollection<UsersGiftList> GCol;
     
-    @if(gifts != null) {
-        @foreach (var p in gifts)
-        {
-            <div class="card text-center" style="margin-bottom: 2rem;border-color:#A20025 !important;">
-                <div class="card-header" style="background-color:#A20025 !important;color:#fff !important;">
-                    @p._id.Split("@")[0].FirstCharToUpper()
-                </div>
-                <div class="card-body" style="padding:none !important;">
-                    <table style="text-align:center;width:100%;font-size:24px;" class="table table-striped table-sm"><tbody>
-                    @foreach (var g in p.giftList)
-                    {
-                        if(!g.deleted) {
-                            <tr>
-                                <td>
-                                    @if(g.gift.StartsWith("http")) {
-                                        <a href="@g.gift" target="_blank">
-                                            Link
-                                        </a>
-                                    } else if (g.link != null) {
-                                        <a href="@g.link" target="_blank">
-                                            @g.gift
-                                        </a>
-                                    } else {
-                                        <span>
-                                            @g.gift
-                                        </span>
-                                    }                                         
-                                </td>
-                                <td>
-                                    @if(g.cost != null) {
-                                        if(g.cost.Length > 0) {
-                                            <span class="badge rounded-pill bg-secondary">$@g.cost</span>
-                                        }
-                                    }
-                                </td>
-                                <td width="84">
-                                    @if(g.createdBy == user.id) {
-                                        <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunDelete(g._id))">
-                                            <span class="oi oi-trash"></span>
-                                        </button>
-                                    }
+@inject AuthenticationStateProvider asp;
+@using System.Security.Claims
+@attribute [Authorize]
 
-                                    @if (g.deleted)
-                                    {
-                                        <span class="oi oi-trash"></span>
-                                    } else if(g.purchasedBy != null) {
-                                        @if(g.purchasedBy == user.email) {
-                                            <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunUnBuy(g._id))">Unbuy</button>
-                                        } 
-                                        else {
-                                        <span class="btn btn-sm">Snagged!</span>
-                                        }
-                                    } else {
-                                        <button class="btn btn-santa-base btn-sm"  @onclick="@(e=>RunBuy(g._id))">Buy!</button>
+<PageTitle>Gifts for Others</PageTitle>
+
+<article style="min-height: 75vh;">
+
+    <header>
+        <h1>🎁 For Others 🎁</h1>
+    </header>
+
+    @if(giftLists != null) {
+        @foreach (var p in giftLists)
+        {
+            <article>
+                <header data-theme="dark" style="background-color:#A20025">
+                    <h2>@p.ForWho.Split("@")[0].FirstCharToUpper()</h2>
+                </header>
+                <div>
+                    <table style="text-align:center;width:100%;font-size:24px;" class="striped"><tbody>
+                    @foreach (var g in p.Gifts)
+                    {
+                        <tr>
+                            <td>
+                                @if(g.gift.StartsWith("http")) {
+                                    <a href="@g.gift" target="_blank">
+                                        Link
+                                    </a>
+                                } else {
+                                    <span>
+                                        @g.gift
+                                    </span>
+                                }                                         
+                            </td>
+                            <td>
+                                @if(g.cost != null) {
+                                    if(g.cost.Length > 0) {
+                                        <div class="outline secondary">$@g.cost</div>
                                     }
-                                </td>
-                            </tr>
-                        } else {
-                            // was deleted but check to see if it was purchsed before delete
-                            if(g.purchasedBy != null) {
-                                <tr>
-                                <td>
-                                    @if(g.gift.StartsWith("http")) {
-                                        <a href="@g.gift" target="_blank">
-                                            Link
-                                        </a>
-                                    } else if (g.link != null) {
-                                        <a href="@g.link" target="_blank">
-                                            @g.gift
-                                        </a>
-                                    } else {
-                                        <span>
-                                            @g.gift
-                                        </span>
-                                    }                                         
-                                </td>
-                                <td>
-                                    @if(g.cost != null) {
-                                        if(g.cost.Length > 0) {
-                                            <span class="badge rounded-pill bg-secondary">$@g.cost</span>
-                                        }
+                                }
+                            </td>
+                            <td width="84">
+                                @if(g.createdBy == _userId) {
+                                    <button class="secondary outline" @onclick="@(e=>RunDelete(g._id))">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                }
+
+                                @if(g.purchasedBy != null) {
+                                    @if(g.purchasedBy == _email) {
+                                        <button class="secondary" @onclick="@(e=>RunUnBuy(g._id))">Unbuy</button>
+                                    } 
+                                    else {
+                                        <span>Snagged!</span>
                                     }
-                                </td>
-                                <td width="84">
-                                    @if (g.deleted)
-                                    {
-                                        <span class="oi oi-trash"></span>
-                                    } else if(g.purchasedBy != null) {
-                                        @if(g.purchasedBy == user.email) {
-                                            <button class="btn btn-dark btn-sm"  @onclick="@(e=>RunUnBuy(g._id))">Unbuy</button>
-                                        } 
-                                        else {
-                                        <span class="btn btn-sm">Snagged!</span>
-                                        }
-                                    } else {
-                                        <button class="btn btn-santa-base btn-sm"  @onclick="@(e=>RunBuy(g._id))">Buy!</button>
-                                    }
-                                </td>
-                            </tr>
-                            }
-                        }
+                                } else {
+                                    <button @onclick="@(e=>RunBuy(g._id))">Buy</button>
+                                }
+                            </td>
+                        </tr>
                     }
                     </tbody></table>
                 </div>
-            </div>
+            </article>
         }
     }
 
-    <br><br><br><br><br><br><br><br>
-</div>
+</article>
 
 @code {
     [Parameter]
     public string Event {get; set;}
+    private string _userId;
+    private string _email;
 
-    private RealmUser user = new RealmUser{};
+    private List<UsersGiftList> giftLists;
 
-     private class GiftPerson {
-        public string _id {get; set;}
-        public List<GiftItem> giftList {get; set;}
-    }
-
-    private class GiftItem {
-        public string created {get; set;}
-        public string _id {get; set;}
-        public string gift {get;set;}
-        public string link {get;set;}
-        
-        public string cost {get;set;}
-        public string purchasedBy {get; set;}
-        public bool deleted {get;set;}
-        public string createdBy {get;set;}
-    }
-    private List<GiftPerson> gifts;
-
-    private async Task RunDelete(string id) {
-        string[] args = { id };
+    private async Task RunDelete(ObjectId id) {
+        string[] args = { id.ToString() };
 
         await JSRuntime.InvokeVoidAsync("realmShim_Function", "setDelete", args);
         await GetGifts();
     }
 
-    private async Task GetGifts() {        
-        string[] args = {Event};
-        gifts = await JSRuntime.InvokeAsync<List<GiftPerson>>("realmShim_Function", "getAllGifts", args);
+    private async Task GetGifts() {
+        var pipeline = new[]
+            {
+                new BsonDocument("$match", new BsonDocument
+                {
+                    { "ownerId", new BsonDocument("$ne", _userId) },
+                    { "event", Event },
+                    { "deleted", new BsonDocument("$ne", true) }
+                }),
+                new BsonDocument("$group", new BsonDocument
+                {
+                    { "_id", "$email" },
+                    { "giftlist", new BsonDocument("$push", "$$ROOT") }
+                }),
+                new BsonDocument("$sort", new BsonDocument("_id", 1))
+            };
+
+        var result = await GCol.Aggregate<UsersGiftList>(pipeline).ToListAsync();
+
+        giftLists = result;
+        StateHasChanged();
     }
 
-    private async Task RunBuy(string id) {
-        string[] args = { id };
+    private async Task RunBuy(ObjectId id) {
+        string[] args = { id.ToString() };
 
         await JSRuntime.InvokeVoidAsync("realmShim_Function", "setPurchased", args);
         await GetGifts();
     }
 
-    private async Task RunUnBuy(string id) {
-        string[] args = { id };
+    private async Task RunUnBuy(ObjectId id) {
+        string[] args = { id.ToString() };
 
         await JSRuntime.InvokeVoidAsync("realmShim_Function", "setUnPurchased", args);
         await GetGifts();
@@ -171,12 +132,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        try
-        {
-            await GetGifts();
-            
-        } catch(Exception ex) {
-            NavigationManager.NavigateTo("/");
-        }
+        var authState = await asp.GetAuthenticationStateAsync();
+        _userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        _email = authState.User.FindFirstValue(ClaimTypes.Name);
+        Console.WriteLine($"User ID: {_userId}, Email: {_email}");
+
+        await GetGifts();
     }
 }
