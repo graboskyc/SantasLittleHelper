@@ -5,6 +5,7 @@
 @using MongoDB.Bson;
 @using MongoDB.Driver;
 @inject IMongoCollection<GiftList> GLCol;
+    @inject IMongoCollection<Gift> GiftCollection;
 @inject AuthenticationStateProvider asp;
 @using System.Security.Claims
 @using global::SantasLittleHelper.Datamodels
@@ -186,8 +187,11 @@
 
     private async Task JoinList() {
         if(joinlist.Length > 1) {
-            string[] args = {joinlist};
-            await JSRuntime.InvokeVoidAsync("realmShim_Function", "setJoinList", args);
+            GLCol.UpdateOne(
+                Builders<GiftList>.Filter.Eq(g => g.share, joinlist),
+                Builders<GiftList>.Update.Push(g => g.ownerId, _userId)
+            );
+
             joinlist = "";
         }
         await GetGifts();
@@ -195,7 +199,30 @@
     private async Task CloneList() {
         if(name.Length > 1) {
             string[] args = {name, share, oldList};
-            await JSRuntime.InvokeVoidAsync("realmShim_Function", "setCopyList", args);
+            
+            var oldListData = await GLCol.Find(g => g.share == oldList).FirstOrDefaultAsync();
+            var newListData = new GiftList {
+                ownerId = oldListData.ownerId,
+                email = _email,
+                name = name, 
+                share = share,
+                created = DateTime.UtcNow
+            };
+
+            GLCol.InsertOne(newListData);
+
+            var filterBuilder = Builders<Gift>.Filter;
+            var filter = filterBuilder.Eq(g => g.eventCode, oldList) &
+                         filterBuilder.Ne(g => g.deleted, true) &
+                         filterBuilder.Exists(g => g.purchasedBy, false);
+            var oldGifts = await GiftCollection.Find(filter).ToListAsync();
+
+            foreach (var gift in oldGifts) {
+                gift._id = ObjectId.GenerateNewId();
+                gift.eventCode = share;
+                GiftCollection.InsertOne(gift);
+            }
+
             name = "";
             share = "";
             oldList = "";
