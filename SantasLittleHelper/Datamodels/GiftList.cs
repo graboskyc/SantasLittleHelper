@@ -10,6 +10,8 @@ namespace SantasLittleHelper.Datamodels
         public ObjectId _id { get; set; }
         public string name { get; set; }
         public string share { get; set; }
+        public string email { get; set; }
+        public DateTime created { get; set; }
         public List<string> ownerId { get; set; } = new List<string>();
     }
 }

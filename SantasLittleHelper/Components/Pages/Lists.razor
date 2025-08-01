@@ -7,6 +7,7 @@
 @inject IMongoCollection<GiftList> GLCol;
 @inject AuthenticationStateProvider asp;
 @using System.Security.Claims
+@using global::SantasLittleHelper.Datamodels
 @attribute [Authorize]
 
 <PageTitle>Gift Lists</PageTitle>
@@ -122,6 +123,7 @@
     private string joinlist,oldList,oldListName = "";
     bool hideList, dispNew, dispJoin, dispClone = false;
     private string _userId = "";
+    private string _email = ""; 
 
     private List<GiftList> l = null;
 
@@ -166,8 +168,15 @@
 
     private async Task SaveList() {
         if(name.Length > 1) {
-            string[] args = {name, share};
-            await JSRuntime.InvokeVoidAsync("realmShim_Function", "setNewList", args);
+            var newList = new GiftList {
+                ownerId = new List<string> { _userId },
+                email = _email,
+                name = name,
+                share = share,
+                created = DateTime.UtcNow
+            };
+            GLCol.InsertOne(newList);
+
             name = "";
             share = "";
             await NewShareLink();
@@ -206,6 +215,7 @@
     {
         var authState = await asp.GetAuthenticationStateAsync();
         _userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        _email = authState.User.FindFirstValue(ClaimTypes.Name);
         Console.WriteLine("User ID: " + _userId);
         await NewShareLink();
         await GetGifts();
