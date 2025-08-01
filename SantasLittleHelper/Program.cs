@@ -38,6 +38,7 @@ static void ConfigureMDBServices(IServiceCollection services, string connectionS
     services.AddSingleton<IMongoClient>(new MongoClient(settings));
     services.AddSingleton<IMongoDatabase>(x => x.GetRequiredService<IMongoClient>().GetDatabase("santa"));
     services.AddSingleton<IMongoCollection<GiftList>>(x => x.GetRequiredService<IMongoDatabase>().GetCollection<GiftList>("lists"));
+    services.AddSingleton<IMongoCollection<Gift>>(x => x.GetRequiredService<IMongoDatabase>().GetCollection<Gift>("gifts"));
 }
 
 ConfigureMDBServices(builder.Services, MDBCONNSTR);
