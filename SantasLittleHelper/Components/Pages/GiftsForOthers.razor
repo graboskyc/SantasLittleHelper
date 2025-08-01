@@ -173,8 +173,6 @@
     {
         try
         {
-            user = await JSRuntime.InvokeAsync<RealmUser>("getUserDetails");
-
             await GetGifts();
             
         } catch(Exception ex) {
