@@ -5,6 +5,8 @@
 @using MongoDB.Bson;
 @using MongoDB.Driver;
 @inject IMongoCollection<UsersGiftList> GCol;
+@inject IMongoCollection<Gift> GiftCollection;
+
     
 @inject AuthenticationStateProvider asp;
 @using System.Security.Claims
@@ -35,6 +37,8 @@
                                     <a href="@g.gift" target="_blank">
                                         Link
                                     </a>
+                                } else if(g.link != null) {
+                                    <a href="@g.link" target="_blank">@g.gift</a>
                                 } else {
                                     <span>
                                         @g.gift
@@ -85,9 +89,10 @@
     private List<UsersGiftList> giftLists;
 
     private async Task RunDelete(ObjectId id) {
-        string[] args = { id.ToString() };
-
-        await JSRuntime.InvokeVoidAsync("realmShim_Function", "setDelete", args);
+        GiftCollection.UpdateOne(
+            Builders<Gift>.Filter.Eq(g => g._id, id),
+            Builders<Gift>.Update.Set(g => g.deleted, true)
+        );
         await GetGifts();
     }
 
@@ -115,16 +120,20 @@
     }
 
     private async Task RunBuy(ObjectId id) {
-        string[] args = { id.ToString() };
+        GiftCollection.UpdateOne(
+            Builders<Gift>.Filter.Eq(g => g._id, id),
+            Builders<Gift>.Update.Set(g => g.purchasedBy, _email)
+        );
 
-        await JSRuntime.InvokeVoidAsync("realmShim_Function", "setPurchased", args);
         await GetGifts();
     }
 
     private async Task RunUnBuy(ObjectId id) {
-        string[] args = { id.ToString() };
-
-        await JSRuntime.InvokeVoidAsync("realmShim_Function", "setUnPurchased", args);
+        GiftCollection.UpdateOne(
+            Builders<Gift>.Filter.Eq(g => g._id, id),
+            Builders<Gift>.Update.Unset(g => g.purchasedBy)
+        );
+        
         await GetGifts();
     }
 

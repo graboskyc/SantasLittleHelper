@@ -127,20 +127,42 @@
     }
 
     private async Task RunDelete(ObjectId id) {
-        string[] args = { id.ToString() };
-
-        await JSRuntime.InvokeVoidAsync("realmShim_Function", "setDelete", args);
+        GCol.UpdateOne(
+            Builders<Gift>.Filter.Eq(g => g._id, id),
+            Builders<Gift>.Update.Set(g => g.deleted, true)
+        );
         await GetGifts();
     }
 
     private async Task SaveGift() {
         if(giftname.Length > 1) {
-            string[] args = {giftname, link, Event, cost.Replace("$",""), kid.FirstCharToUpper() };
-            await JSRuntime.InvokeVoidAsync("realmShim_Function", "setNewGift", args);
-            giftname = "";
-            link = "";
-            cost = "";
-            kid="";
+
+            var newGift = new Gift
+            {
+                gift = giftname,
+                eventCode = Event,
+                ownerId = _userId,
+                email=_email,
+                created = DateTime.UtcNow,
+                createdBy = _userId,
+            };
+
+
+            if (link.Length > 5) {
+                newGift.link = link.Trim();
+            }
+
+            if (cost.Length > 0) {
+                newGift.cost = cost.Replace("$", "");
+            }
+
+            if (kid.Length > 0) {
+                newGift.ownerId = kid.Trim();
+                newGift.email = kid.Trim();
+            }
+            
+            await GCol.InsertOneAsync(newGift);
+            
             modalOpen = false;
         }
         await GetGifts();
