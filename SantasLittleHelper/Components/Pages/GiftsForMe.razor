@@ -11,7 +11,7 @@
 
 <PageTitle>Gifts For Me</PageTitle>
 
-<article style="min-height: 75vh;">
+<article style="min-height: 75vh;padding:0px;">
 
     <header>
         <h1>🎁 For Me 🎁</h1>
@@ -30,7 +30,7 @@
                 @foreach (var g in gifts)
                 {
                     <tr>
-                        <td>
+                        <td style="font-size:medium;">
                             @if(g.gift.StartsWith("http")) {
                                 <a href="@g.gift" target="_blank">Link</a>
                             } else if (g.link != null) {
@@ -39,16 +39,16 @@
                                 <span>@g.gift</span>
                             } 
                         </td>
-                        <td>
+                        <td style="font-size:medium;">
                             @if(g.cost != null) {
                                 if(g.cost.Length > 0) {
-                                    <div role="button" class="secondary outline" style="width:100%">$@g.cost</div>
+                                    <div role="button" class="secondary outline" style="width:100%;padding:1px;font-size:medium;">$@g.cost</div>
                                 }
                             }
                         </td>
-                        <td>
+                        <td style="font-size:medium;">
                             <button @onclick="@(e=>RunDelete(g._id))">
-                                <span class="material-symbols-outlined">delete</span>
+                                <span style="font-size:medium" class="material-symbols-outlined">delete</span>
                             </button>
                         </td>
                     </tr>

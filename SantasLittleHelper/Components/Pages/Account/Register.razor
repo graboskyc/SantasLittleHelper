@@ -29,9 +29,15 @@
         <label for="txt_password">Password</label>
         <InputText id="txt_password" type="password" @bind-Value="newUser.Password" placeholder="Password"  />
 
-        <label for="txt_id">Stitch ID</label>
-        <a role="button" @onclick="GetLegacyId">Look for my old ID</a>
-        <InputText id="txt_id" @bind-Value="newUser.Id" placeholder="Stitch ID" disabled />
+         <label>
+            <InputCheckbox @bind-Value="newUser.IsLegacy" role="switch" />
+            Restore my old account
+        </label>
+
+        @if(newUser.IsLegacy) {
+            <label for="txt_id">Stitch ID</label>
+            <InputText id="txt_id" @bind-Value="newUser.Id" placeholder="Stitch ID" disabled />
+        }
     }
 
     @if(!string.IsNullOrEmpty(_message))
@@ -41,7 +47,11 @@
 
     @if(!isSuccess) {
         @if(!isLoading) {
-            <button type="submit" style="width:100%;">Create User</button>
+            @if(newUser.IsLegacy) {
+                <button type="submit" style="width:100%;">Restore User</button>
+            } else {
+                <button type="submit" style="width:100%;">Create User</button>
+            }
         } else {
             <button aria-busy="true" aria-label="Creating..." style="width:100%;">Creating...</button>
         }
@@ -59,6 +69,7 @@
         public string Email { get { return _email; } set { _email = value?.Trim().ToLower(); } }
         public string Password { get; set; } = "";
         public string Id { get; set; } = "";
+        public bool IsLegacy { get; set; } = false;
     }
 
     private NewUserModel newUser = new NewUserModel();
@@ -84,6 +95,11 @@
     private async Task CreateNewUser()
     {
         isLoading = true;
+
+        if(newUser.IsLegacy) {
+            await GetLegacyId();
+        }
+
         var identityUser = new MongoUser
         {
             UserName = newUser.Email,

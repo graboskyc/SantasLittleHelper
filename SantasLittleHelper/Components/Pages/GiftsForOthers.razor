@@ -14,7 +14,7 @@
 
 <PageTitle>Gifts for Others</PageTitle>
 
-<article style="min-height: 75vh;">
+<article style="min-height: 75vh;padding:0px;">
 
     <header>
         <h1>🎁 For Others 🎁</h1>
@@ -31,46 +31,51 @@
                     <table style="text-align:center;width:100%;font-size:24px;" class="striped"><tbody>
                     @foreach (var g in p.Gifts)
                     {
-                        <tr>
-                            <td>
-                                @if(g.gift.StartsWith("http")) {
-                                    <a href="@g.gift" target="_blank">
-                                        Link
-                                    </a>
-                                } else if(g.link != null) {
-                                    <a href="@g.link" target="_blank">@g.gift</a>
-                                } else {
-                                    <span>
-                                        @g.gift
-                                    </span>
-                                }                                         
-                            </td>
-                            <td>
-                                @if(g.cost != null) {
-                                    if(g.cost.Length > 0) {
-                                        <div class="outline secondary" role="button">$@g.cost</div>
+                        @if((g.deleted && g.purchasedBy != null) || !g.deleted) {
+                            <tr>
+                                <td style="font-size:medium;">
+                                    @if(g.gift.StartsWith("http")) {
+                                        <a href="@g.gift" target="_blank">
+                                            Link
+                                        </a>
+                                    } else if(g.link != null) {
+                                        <a href="@g.link" target="_blank">@g.gift</a>
+                                    } else {
+                                        <span>
+                                            @g.gift
+                                        </span>
+                                    }                                         
+                                </td>
+                                <td style="font-size:medium;">
+                                    @if(g.cost != null) {
+                                        if(g.cost.Length > 0) {
+                                            <div class="outline secondary" role="button" style="width:100%;padding:1px;font-size:medium;">$@g.cost</div>
+                                        }
                                     }
-                                }
-                            </td>
-                            <td width="84">
-                                @if(g.createdBy == _userId) {
-                                    <button class="secondary outline" @onclick="@(e=>RunDelete(g._id))">
-                                        <span class="material-symbols-outlined">delete</span>
-                                    </button>
-                                }
+                                </td>
+                                <td style="font-size:medium;" width="84">
+                                    @if(g.createdBy == _userId) {
+                                        <button class="secondary outline" @onclick="@(e=>RunDelete(g._id))">
+                                            <span class="material-symbols-outlined">delete</span>
+                                        </button>
+                                    }
 
-                                @if(g.purchasedBy != null) {
-                                    @if(g.purchasedBy == _email) {
-                                        <button class="secondary" @onclick="@(e=>RunUnBuy(g._id))">Unbuy</button>
-                                    } 
-                                    else {
-                                        <span>Snagged!</span>
+                                    @if(g.deleted) {
+                                        <div><span class="material-symbols-outlined">warning</span>Bought but unwanted!</div>
                                     }
-                                } else {
-                                    <button @onclick="@(e=>RunBuy(g._id))">Buy</button>
-                                }
-                            </td>
-                        </tr>
+                                    else if(g.purchasedBy != null) {
+                                        @if(g.purchasedBy == _email) {
+                                            <button style="font-size:medium" class="secondary" @onclick="@(e=>RunUnBuy(g._id))">Unbuy</button>
+                                        } 
+                                        else {
+                                            <span>Snagged!</span>
+                                        }
+                                    } else {
+                                        <button style="font-size:medium" @onclick="@(e=>RunBuy(g._id))">Buy</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
                     }
                     </tbody></table>
                 </div>
