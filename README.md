@@ -1,10 +1,12 @@
 # Santa's Little Helper
  
-Simple app built on MongoDB Realm and Blazor to allow a group of users to enter gifts they want for Christmas, then have others view those gifts and mark off if it was already purchased without letting the recipient know it was bought.
+Simple app built, originally built on MongoDB Realm and Blazor WASM, now ported to MongoDB and Blazor Server. 
+
+It allows a group of users to enter gifts they want for Christmas, then have others view those gifts and mark off if it was already purchased without letting the recipient know it was bought.
 
 ## Features
 
-* Username/password authentication (Realm)
+* Username/password authentication
 * User can view their list and add new items with a title and link
 * Users can view everyone else's list and mark off if they bought that item off the list
 * Other users can see something was snagged for purchase (to prevent double buys) but doesn't know who
