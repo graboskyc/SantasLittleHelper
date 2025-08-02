@@ -1,0 +1,250 @@
+@page "/Lists"
+@page "/Home"
+@inject NavigationManager NavigationManager;
+@inject IJSRuntime JSRuntime;
+@using MongoDB.Bson;
+@using MongoDB.Driver;
+@inject IMongoCollection<GiftList> GLCol;
+    @inject IMongoCollection<Gift> GiftCollection;
+@inject AuthenticationStateProvider asp;
+@using System.Security.Claims
+@using global::SantasLittleHelper.Datamodels
+@attribute [Authorize]
+
+<PageTitle>Gift Lists</PageTitle>
+
+<article style="min-height: 75vh;">
+
+    <header>
+        <h1>Gift Lists</h1>
+    </header>
+
+    @if(!hideList) {
+        @if(l != null) {
+            @foreach (var li in l)
+            {
+                <article style="margin-bottom:2rem;">
+                    <header data-theme="dark" style="background-color:#A20025">
+                        <h2>@li.name</h2>
+                    </header>
+
+                    <div class="grid">
+                        <a @onclick="@(() => NavigationManager.NavigateTo("/Gifts/"+li.share))"  role="button" style="width: 100%;" >
+                            <span class="material-symbols-outlined">person</span> <br />
+                            My Gifts
+                        </a>
+
+                        <a @onclick="@(() => NavigationManager.NavigateTo("/Others/"+li.share))" role="button" style="width: 100%;" >
+                            <span class="material-symbols-outlined">group</span> <br />
+                            Their Gifts
+                        </a>
+
+                        <a  @onclick="@(() => OpenClone(li.name, li.share))" role="button" style="width: 100%;" >
+                            <span class="material-symbols-outlined">content_copy</span> <br />
+                            Clone Event
+                        </a>
+                    </div>
+
+                    <footer class="footer-subtle">
+                        Invite people with the code <i>@li.share</i>
+                    </footer>
+                    
+                </article>
+            }
+        }
+        else {
+            <p>You have no lists yet, add one...</p>
+        }
+    }
+
+    @if(hideList) {
+        @if(dispNew) {
+            <article>
+                <header data-theme="dark" style="background-color:#A20025">
+                    <h2>Create a List</h2>
+                </header>
+                <div>
+                    <input type="text" name="txt_name" id="txt_name" @bind="name" @bind:event="onchange" class="form-control form-control-lg" placeholder="event name" />
+                </div>
+                <footer>
+                    <button  @onclick="SaveList" style="width:100%" class="outline">New List</button>
+                </footer>
+            </article>
+        }
+        @if(dispClone) {
+            <article>
+                <header data-theme="dark" style="background-color:#A20025">
+                    <h3>Clone List @oldListName</h3>
+                </header>
+                <div>
+                    <p><i>This will create a new list, auto-invite everyone tied to the old list, and copy all unpurchased gifts from everyone to it.</i></p>
+                    <input type="text" name="txt_name" id="txt_name" @bind="name" @bind:event="onchange" class="form-control form-control-lg" placeholder="event name" />
+                </div>
+                <footer>
+                    <button style="width:100%"  @onclick="CloneList" id="btn_newgift" class="outline">Clone List</button>
+                </footer>
+            </article>
+        }
+        @if(dispJoin) {
+            <article>
+                <header data-theme="dark" style="background-color:#A20025">
+                    <h3>Join a List</h3>
+                </header>
+                <div>
+                    <input type="text" name="txt_joinlist" id="txt_joinlist" @bind="joinlist" @bind:event="onchange" class="form-control form-control-lg" placeholder="join list id" />
+                </div>
+                <footer>
+                    <button style="width:100%"  @onclick="JoinList" id="btn_joinlist" class="outline">Join List</button>
+                </footer>
+            </article>
+        }
+    }
+
+    <footer>
+        <div class="santa-grid santa-grid-3">
+            <button @onclick="OpenNew" id="btn_opennewlist" class="outline">
+                <span class="material-symbols-outlined">add_notes</span>
+            </button>
+            <button @onclick="OpenMain" id="btn_openmain" class="outline">
+                <span class="material-symbols-outlined">home</span>
+            </button>
+            <button @onclick="OpenJoin" id="btn_openjoinlist" class="outline">
+                <span class="material-symbols-outlined">group_add</span>
+            </button>
+        </div>
+    </footer>
+
+    
+</article>
+
+@code {
+    
+    private string name = "";
+    private string share = "";
+    private string joinlist,oldList,oldListName = "";
+    bool hideList, dispNew, dispJoin, dispClone = false;
+    private string _userId = "";
+    private string _email = ""; 
+
+    private List<GiftList> l = null;
+
+    private void OpenNew() {        
+        hideList = true;
+        dispJoin = false;
+        dispNew = true;
+        dispClone = false;
+    }
+
+    private void OpenJoin() {        
+        hideList = true;
+        dispJoin = true;
+        dispNew = false;
+        dispClone = false;
+    }
+
+    private void OpenMain() {        
+        hideList = false;
+        dispJoin = false;
+        dispNew = false;
+        dispClone = false;
+    }
+
+    private void OpenClone(string oldname, string oldcode) {        
+        hideList = true;
+        dispJoin = false;
+        dispNew = false;
+        dispClone = true;
+        oldListName = oldname;
+        oldList = oldcode;
+    }
+
+    private async Task GetGifts() {        
+        var result = await GLCol.Aggregate()
+            .Match(g => g.ownerId.Contains(_userId))
+            .SortByDescending(g => g._id)
+            .ToListAsync();
+        l = result;
+        OpenMain();
+    }
+
+    private async Task SaveList() {
+        if(name.Length > 1) {
+            var newList = new GiftList {
+                ownerId = new List<string> { _userId },
+                email = _email,
+                name = name,
+                share = share,
+                created = DateTime.UtcNow
+            };
+            GLCol.InsertOne(newList);
+
+            name = "";
+            share = "";
+            await NewShareLink();
+        }
+        await GetGifts();
+    }
+
+    private async Task JoinList() {
+        if(joinlist.Length > 1) {
+            GLCol.UpdateOne(
+                Builders<GiftList>.Filter.Eq(g => g.share, joinlist),
+                Builders<GiftList>.Update.Push(g => g.ownerId, _userId)
+            );
+
+            joinlist = "";
+        }
+        await GetGifts();
+    }
+    private async Task CloneList() {
+        if(name.Length > 1) {
+            string[] args = {name, share, oldList};
+            
+            var oldListData = await GLCol.Find(g => g.share == oldList).FirstOrDefaultAsync();
+            var newListData = new GiftList {
+                ownerId = oldListData.ownerId,
+                email = _email,
+                name = name, 
+                share = share,
+                created = DateTime.UtcNow
+            };
+
+            GLCol.InsertOne(newListData);
+
+            var filterBuilder = Builders<Gift>.Filter;
+            var filter = filterBuilder.Eq(g => g.eventCode, oldList) &
+                         filterBuilder.Ne(g => g.deleted, true) &
+                         filterBuilder.Exists(g => g.purchasedBy, false);
+            var oldGifts = await GiftCollection.Find(filter).ToListAsync();
+
+            foreach (var gift in oldGifts) {
+                gift._id = ObjectId.GenerateNewId();
+                gift.eventCode = share;
+                GiftCollection.InsertOne(gift);
+            }
+
+            name = "";
+            share = "";
+            oldList = "";
+            oldListName = "";
+            await NewShareLink();
+        }
+        await GetGifts();
+    }
+   
+   private async Task NewShareLink() {
+        Random random = new Random();
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        share = new string(Enumerable.Repeat(chars, 8).Select(s => s[random.Next(s.Length)]).ToArray());
+   }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await asp.GetAuthenticationStateAsync();
+        _userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        _email = authState.User.FindFirstValue(ClaimTypes.Name);
+        Console.WriteLine("User ID: " + _userId);
+        await NewShareLink();
+        await GetGifts();
+    }
+}

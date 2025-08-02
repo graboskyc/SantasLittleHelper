@@ -1,0 +1,151 @@
+@page "/Others/{Event}"
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime;
+@using SantasLittleHelper.Datamodels;
+@using MongoDB.Bson;
+@using MongoDB.Driver;
+@inject IMongoCollection<UsersGiftList> GCol;
+@inject IMongoCollection<Gift> GiftCollection;
+
+    
+@inject AuthenticationStateProvider asp;
+@using System.Security.Claims
+@attribute [Authorize]
+
+<PageTitle>Gifts for Others</PageTitle>
+
+<article style="min-height: 75vh;">
+
+    <header>
+        <h1>🎁 For Others 🎁</h1>
+    </header>
+
+    @if(giftLists != null) {
+        @foreach (var p in giftLists)
+        {
+            <article>
+                <header data-theme="dark" style="background-color:#A20025">
+                    <h2>@p.ForWho.Split("@")[0].FirstCharToUpper()</h2>
+                </header>
+                <div>
+                    <table style="text-align:center;width:100%;font-size:24px;" class="striped"><tbody>
+                    @foreach (var g in p.Gifts)
+                    {
+                        <tr>
+                            <td>
+                                @if(g.gift.StartsWith("http")) {
+                                    <a href="@g.gift" target="_blank">
+                                        Link
+                                    </a>
+                                } else if(g.link != null) {
+                                    <a href="@g.link" target="_blank">@g.gift</a>
+                                } else {
+                                    <span>
+                                        @g.gift
+                                    </span>
+                                }                                         
+                            </td>
+                            <td>
+                                @if(g.cost != null) {
+                                    if(g.cost.Length > 0) {
+                                        <div class="outline secondary" role="button">$@g.cost</div>
+                                    }
+                                }
+                            </td>
+                            <td width="84">
+                                @if(g.createdBy == _userId) {
+                                    <button class="secondary outline" @onclick="@(e=>RunDelete(g._id))">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                }
+
+                                @if(g.purchasedBy != null) {
+                                    @if(g.purchasedBy == _email) {
+                                        <button class="secondary" @onclick="@(e=>RunUnBuy(g._id))">Unbuy</button>
+                                    } 
+                                    else {
+                                        <span>Snagged!</span>
+                                    }
+                                } else {
+                                    <button @onclick="@(e=>RunBuy(g._id))">Buy</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    </tbody></table>
+                </div>
+            </article>
+        }
+    }
+
+</article>
+
+@code {
+    [Parameter]
+    public string Event {get; set;}
+    private string _userId;
+    private string _email;
+
+    private List<UsersGiftList> giftLists;
+
+    private async Task RunDelete(ObjectId id) {
+        GiftCollection.UpdateOne(
+            Builders<Gift>.Filter.Eq(g => g._id, id),
+            Builders<Gift>.Update.Set(g => g.deleted, true)
+        );
+        await GetGifts();
+    }
+
+    private async Task GetGifts() {
+        var pipeline = new[]
+            {
+                new BsonDocument("$match", new BsonDocument
+                {
+                    { "ownerId", new BsonDocument("$ne", _userId) },
+                    { "event", Event },
+                    { "deleted", new BsonDocument("$ne", true) }
+                }),
+                new BsonDocument("$group", new BsonDocument
+                {
+                    { "_id", "$email" },
+                    { "giftlist", new BsonDocument("$push", "$$ROOT") }
+                }),
+                new BsonDocument("$sort", new BsonDocument("_id", 1))
+            };
+
+        var result = await GCol.Aggregate<UsersGiftList>(pipeline).ToListAsync();
+
+        giftLists = result;
+        StateHasChanged();
+    }
+
+    private async Task RunBuy(ObjectId id) {
+        GiftCollection.UpdateOne(
+            Builders<Gift>.Filter.Eq(g => g._id, id),
+            Builders<Gift>.Update.Set(g => g.purchasedBy, _email)
+        );
+
+        await GetGifts();
+    }
+
+    private async Task RunUnBuy(ObjectId id) {
+        GiftCollection.UpdateOne(
+            Builders<Gift>.Filter.Eq(g => g._id, id),
+            Builders<Gift>.Update.Unset(g => g.purchasedBy)
+        );
+
+        await GetGifts();
+    }
+
+   
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await asp.GetAuthenticationStateAsync();
+        _userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        _email = authState.User.FindFirstValue(ClaimTypes.Name);
+        Console.WriteLine($"User ID: {_userId}, Email: {_email}");
+
+        await GetGifts();
+    }
+}

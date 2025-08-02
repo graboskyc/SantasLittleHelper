@@ -1,0 +1,185 @@
+@page "/Gifts/{Event}"
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime;
+@using MongoDB.Bson;
+@using MongoDB.Driver;
+@inject IMongoCollection<Gift> GCol;
+    
+@inject AuthenticationStateProvider asp;
+@using System.Security.Claims
+@attribute [Authorize]
+
+<PageTitle>Gifts For Me</PageTitle>
+
+<article style="min-height: 75vh;">
+
+    <header>
+        <h1>🎁 For Me 🎁</h1>
+    </header>
+
+    <table style="text-align:center;width:100%;font-size:24px;" class="striped">
+        <thead data-theme="dark">
+            <tr>
+                <th>Gift</th>
+                <th>Cost</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if(gifts != null) {
+                @foreach (var g in gifts)
+                {
+                    <tr>
+                        <td>
+                            @if(g.gift.StartsWith("http")) {
+                                <a href="@g.gift" target="_blank">Link</a>
+                            } else if (g.link != null) {
+                                <a href="@g.link" target="_blank">@g.gift</a>
+                            } else {
+                                <span>@g.gift</span>
+                            } 
+                        </td>
+                        <td>
+                            @if(g.cost != null) {
+                                if(g.cost.Length > 0) {
+                                    <div role="button" class="secondary outline" style="width:100%">$@g.cost</div>
+                                }
+                            }
+                        </td>
+                        <td>
+                            <button @onclick="@(e=>RunDelete(g._id))">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else {
+                <tr><td><p>You have no gifts yet, add one...</p></td></tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="3" style="text-align:center;">
+                    <button @onclick="() => modalOpen = true" class="secondary" style="width:100%">Add a Gift</button>
+                </td>
+            </tr>
+        </tfoot>
+    </table
+
+    @if (modalOpen)
+    {
+        <dialog open>
+            <article>
+                <header data-theme="dark" style="background-color:#A20025">
+                    <h2>
+                        Add a Gift
+                        <button @onclick="() => modalOpen = false" class="secondary">
+                            <span class="material-symbols-outlined">close</span>
+                        </button>
+                    </h2>
+                </header>
+                    <div>
+                        <input type="text" name="txt_giftname" id="txt_giftname" @bind="giftname" @bind:event="onchange" class="form-control form-control-lg" placeholder="gift idea" />
+                        <br />
+                        <input type="text" name="txt_link" id="txt_link" @bind="link" @bind:event="onchange" class="form-control form-control-lg" placeholder="link" />
+                        <br />
+                        <input type="text" name="txt_cost" id="txt_cost" @bind="cost" @bind:event="onchange" class="form-control form-control-lg" placeholder="$" />
+                        <br />
+                        <input type="text" name="txt_kid" id="txt_kid" @bind="kid" @bind:event="onchange" class="form-control form-control-lg" placeholder="Kid's Name if for a Kid" />
+                        <br />
+                    </div>
+                <footer>
+                    <button @onclick="SaveGift" style="width:100%">New Gift</button>
+                </footer>
+            </article>
+        </dialog>
+    }
+
+    
+
+    
+</article>
+
+@code {
+    [Parameter]
+    public string Event {get; set;}
+    private string _userId = "";
+    private string _email = "";
+    
+    private string giftname = "";
+    string link = "";
+    string kid = "";
+    private string cost = "";
+    private bool modalOpen = false;
+
+
+    private List<Gift> gifts = null;
+
+    private async Task GetGifts() {
+        modalOpen = false;
+        var result = await GCol.Aggregate()
+            .Match(g => g.eventCode == Event && g.deleted != true && g.ownerId == _userId)
+            .SortBy(g => g.created)
+            .ToListAsync();
+        gifts = result;
+        StateHasChanged();
+    }
+
+    private async Task RunDelete(ObjectId id) {
+        GCol.UpdateOne(
+            Builders<Gift>.Filter.Eq(g => g._id, id),
+            Builders<Gift>.Update.Set(g => g.deleted, true)
+        );
+        await GetGifts();
+    }
+
+    private async Task SaveGift() {
+        if(giftname.Length > 1) {
+
+            var newGift = new Gift
+            {
+                gift = giftname,
+                eventCode = Event,
+                ownerId = _userId,
+                email=_email,
+                created = DateTime.UtcNow,
+                createdBy = _userId,
+            };
+
+
+            if (link.Length > 5) {
+                newGift.link = link.Trim();
+            }
+
+            if (cost.Length > 0) {
+                newGift.cost = cost.Replace("$", "");
+            }
+
+            if (kid.Length > 0) {
+                newGift.ownerId = kid.Trim();
+                newGift.email = kid.Trim();
+            }
+            
+            await GCol.InsertOneAsync(newGift);
+            
+            modalOpen = false;
+        }
+        await GetGifts();
+    }
+   
+
+    protected override async Task OnInitializedAsync()
+    {
+        giftname = "";
+        link = "";
+        cost = "";
+        kid="";
+
+        var authState = await asp.GetAuthenticationStateAsync();
+        _userId = authState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        _email = authState.User.FindFirstValue(ClaimTypes.Name);
+
+        await GetGifts();
+    }
+}

@@ -1,0 +1,135 @@
+@using AspNetCore.Identity.Mongo.Model
+@using Microsoft.AspNetCore.Identity
+@using AspNetCore.Identity.Mongo
+@using AspNetCore.Identity.Mongo.Stores
+@inject UserManager<MongoUser> UserManager
+@layout NavlessLayout;
+@page "/NewUser"
+@page "/Register"
+@page "/Account/Register"
+@page "/Account/NewUser"
+@using MongoDB.Bson;
+@using MongoDB.Driver;
+@inject IMongoCollection<Gift> GCol;
+@inject NavigationManager NavigationManager;
+
+<PageTitle>New User</PageTitle>
+
+
+<h1>Create a New User</h1>
+
+<EditForm Model="@newUser" OnValidSubmit="CreateNewUser">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    @if(!isSuccess) {
+        <label for="txt_username">Email Address</label>
+        <InputText id="txt_username" @bind-Value="newUser.Email" placeholder="Email" />
+
+        <label for="txt_password">Password</label>
+        <InputText id="txt_password" type="password" @bind-Value="newUser.Password" placeholder="Password"  />
+
+        <label for="txt_id">Stitch ID</label>
+        <a role="button" @onclick="GetLegacyId">Look for my old ID</a>
+        <InputText id="txt_id" @bind-Value="newUser.Id" placeholder="Stitch ID" disabled />
+    }
+
+    @if(!string.IsNullOrEmpty(_message))
+    {
+        <mark>@_message</mark>
+    }
+
+    @if(!isSuccess) {
+        @if(!isLoading) {
+            <button type="submit" style="width:100%;">Create User</button>
+        } else {
+            <button aria-busy="true" aria-label="Creating..." style="width:100%;">Creating...</button>
+        }
+    } else {
+        <p><a @onclick="@(() => NavigationManager.NavigateTo("/Account/Login"))">Please Login</a></p>
+    }
+    
+</EditForm>
+
+
+@code {
+    private class NewUserModel
+    {
+        private string _email = "";
+        public string Email { get { return _email; } set { _email = value?.Trim().ToLower(); } }
+        public string Password { get; set; } = "";
+        public string Id { get; set; } = "";
+    }
+
+    private NewUserModel newUser = new NewUserModel();
+    private bool isLoading = false;
+    private bool isSuccess = false;
+    private string _message = "";
+
+    private async Task GetLegacyId()
+    {
+        // TODO: Implement the logic to retrieve legacy ID
+        var result = await GCol.Aggregate()
+            .Match(g => g.email == newUser.Email)
+            .FirstOrDefaultAsync();
+
+        if (result != null)
+        {
+            newUser.Id = result.ownerId;
+        } else {
+            _message = "No legacy ID found for this email.";
+        }
+    }
+
+    private async Task CreateNewUser()
+    {
+        isLoading = true;
+        var identityUser = new MongoUser
+        {
+            UserName = newUser.Email,
+            Email = newUser.Email
+        };
+
+        @if (!string.IsNullOrEmpty(newUser.Id))
+        {
+            identityUser.Id= MongoDB.Bson.ObjectId.Parse(newUser.Id);
+        }
+
+        identityUser.Claims.Add(new IdentityUserClaim<string>
+        {
+            ClaimType = "Email",
+            ClaimValue = newUser.Email
+        });
+
+        identityUser.Claims.Add(new IdentityUserClaim<string>
+            {
+                ClaimType = "groups",
+                ClaimValue = "USER"
+            });
+
+        identityUser.Claims.Add(new IdentityUserClaim<string>
+            {
+                ClaimType = "groups",
+                ClaimValue = "VIEWER"
+            });
+
+        var result = await UserManager.CreateAsync(identityUser, newUser.Password);
+        isLoading = false;
+        if (result.Succeeded)
+        {
+            // Optionally show success message or redirect
+            Console.WriteLine("User created successfully.");
+            _message = "User created successfully.";
+            isSuccess = true;
+            isLoading = false;
+        }
+        else
+        {
+            // Optionally show error messages
+            _message = "Could not create user.";
+            isSuccess = false;
+            isLoading = false;
+            Console.WriteLine("Error creating user: " + string.Join(", ", result.Errors.Select(e => e.Description)));
+        }
+    }
+}

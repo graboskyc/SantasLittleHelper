@@ -1,0 +1,40 @@
+﻿@using System.Security.Claims
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager;
+@inject AuthenticationStateProvider asp;
+
+<main class="container">
+
+        <article style="text-align:center;margin-top:20px;min-height:90vh;" data-theme="light">
+            @Body
+
+            <footer>
+                <NavMenu />
+            </footer>
+        </article>
+
+</main>
+
+@code {
+    private string _un = "";
+    private string _id = "";
+    private bool _hasRun = false;
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if (firstRender && !_hasRun) {
+            var authState = await asp.GetAuthenticationStateAsync();
+            if (!(authState.User.Identity?.IsAuthenticated ?? false)) {
+                NavigationManager.NavigateTo("/Login");
+            } else {
+                var name = authState.User.Identity?.Name?.Split('@')[0] ?? "";
+                _id = authState.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+                if (!string.IsNullOrEmpty(name)) {
+                    _un = char.ToUpper(name[0]) + name.Substring(1);
+                } else {
+                    _un = "";
+                }
+            }
+            _hasRun = true;
+            StateHasChanged();
+        }
+    }
+}

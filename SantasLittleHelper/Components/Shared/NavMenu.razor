@@ -1,0 +1,11 @@
+﻿@inject NavigationManager NavigationManager
+
+<div class="santa-grid santa-grid-2">
+    <NavLink role="button" Match="NavLinkMatch.All" class="outline" @onclick="@(() => NavigationManager.NavigateTo("/Home"))">
+        <span class="material-symbols-outlined">home</span>
+    </NavLink>
+
+    <a role="button" class="secondary" onclick="logout()">
+        <span class="material-symbols-outlined">logout</span>
+    </a>
+</div>
