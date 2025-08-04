@@ -1,11 +1,22 @@
 ﻿@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider asp;
 
 <div class="santa-grid santa-grid-2">
     <NavLink role="button" Match="NavLinkMatch.All" class="outline" @onclick="@(() => NavigationManager.NavigateTo("/Home"))">
         <span class="material-symbols-outlined">home</span>
     </NavLink>
 
-    <a role="button" class="secondary" onclick="logout()">
+    <a role="button" class="secondary" @onclick="logout">
         <span class="material-symbols-outlined">logout</span>
     </a>
 </div>
+
+@code {
+    private async Task logout()
+    {
+        await asp.GetAuthenticationStateAsync();
+        var casp = asp as CustomAuthStateProvider;
+        casp?.AuthenticateUser("");
+        NavigationManager.NavigateTo("/Login");
+    }
+}
