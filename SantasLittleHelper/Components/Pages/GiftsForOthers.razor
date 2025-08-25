@@ -53,26 +53,32 @@
                                         }
                                     }
                                 </td>
-                                <td style="font-size:medium;" width="84" role="group">
-                                    @if(g.createdBy == _userId) {
-                                        <button class="secondary outline" @onclick="@(e=>RunDelete(g._id))">
-                                            <span class="material-symbols-outlined">delete</span>
-                                        </button>
-                                    }
-
-                                    @if(g.deleted) {
-                                        <div><span class="material-symbols-outlined">warning</span>Bought but unwanted!</div>
-                                    }
-                                    else if(g.purchasedBy != null) {
-                                        @if(g.purchasedBy == _email) {
-                                            <button style="font-size:medium" class="secondary" @onclick="@(e=>RunUnBuy(g._id))">Unbuy</button>
-                                        } 
-                                        else {
-                                            <span>Snagged!</span>
+                                <td style="font-size:medium;" width="84">
+                                    <div role="group">
+                                        @if(g.createdBy == _userId) {
+                                            <button class="secondary outline" @onclick="@(e=>RunDelete(g._id))">
+                                                <span class="material-symbols-outlined">delete</span>
+                                            </button>
                                         }
-                                    } else {
-                                        <button style="font-size:medium" @onclick="@(e=>RunBuy(g._id))">Buy</button>
-                                    }
+
+                                        @if(g.deleted) {
+                                            <div><span class="material-symbols-outlined">warning</span>Bought but unwanted!</div>
+                                        }
+                                        else if(g.purchasedBy != null) {
+                                            @if(g.purchasedBy == _email) {
+                                                <button style="font-size:medium" class="secondary" @onclick="@(e=>RunUnBuy(g._id))">
+                                                    <span class="material-symbols-outlined">remove_shopping_cart</span>
+                                                </button>
+                                            } 
+                                            else {
+                                                <span>Snagged!</span>
+                                            }
+                                        } else {
+                                            <button style="font-size:medium" @onclick="@(e=>RunBuy(g._id))">
+                                                <span class="material-symbols-outlined">add_shopping_cart</span>
+                                            </button>
+                                        }
+                                    </div>
                                 </td>
                             </tr>
                         }
