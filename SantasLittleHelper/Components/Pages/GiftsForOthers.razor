@@ -17,7 +17,7 @@
 <article style="min-height: 75vh;padding:0px;">
 
     <header>
-        <h1>🎁 For Others 🎁</h1>
+        <h1>🎁For Them🎁</h1>
     </header>
 
     @if(giftLists != null) {
@@ -57,7 +57,7 @@
                                     <div role="group">
                                         @if(g.createdBy == _userId) {
                                             <button class="secondary outline" @onclick="@(e=>RunDelete(g._id))">
-                                                <span class="material-symbols-outlined">delete</span>
+                                                <span class="material-symbols-outlined" style="font-size:medium;">delete</span>
                                             </button>
                                         }
 
@@ -67,7 +67,7 @@
                                         else if(g.purchasedBy != null) {
                                             @if(g.purchasedBy == _email) {
                                                 <button style="font-size:medium" class="secondary" @onclick="@(e=>RunUnBuy(g._id))">
-                                                    <span class="material-symbols-outlined">remove_shopping_cart</span>
+                                                    <span class="material-symbols-outlined" style="font-size:medium;">remove_shopping_cart</span>
                                                 </button>
                                             } 
                                             else {
@@ -75,7 +75,7 @@
                                             }
                                         } else {
                                             <button style="font-size:medium" @onclick="@(e=>RunBuy(g._id))">
-                                                <span class="material-symbols-outlined">add_shopping_cart</span>
+                                                <span class="material-symbols-outlined" style="font-size:medium;">add_shopping_cart</span>
                                             </button>
                                         }
                                     </div>
