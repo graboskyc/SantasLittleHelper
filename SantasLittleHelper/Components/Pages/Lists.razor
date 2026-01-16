@@ -214,7 +214,7 @@
             var filterBuilder = Builders<Gift>.Filter;
             var filter = filterBuilder.Eq(g => g.eventCode, oldList) &
                          filterBuilder.Ne(g => g.deleted, true) &
-                         filterBuilder.Exists(g => g.purchasedBy, false);
+                         (filterBuilder.Exists(g => g.purchasedBy, false) | filterBuilder.Eq(g => g.purchasedBy, null));
             var oldGifts = await GiftCollection.Find(filter).ToListAsync();
 
             foreach (var gift in oldGifts) {
